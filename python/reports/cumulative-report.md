@@ -15,6 +15,7 @@ Verified 2026-09-26 on macOS arm64:
 - From `python/`: `uv sync --locked`; `uv run marimo run notebooks` opens the lesson gallery. Use `uv run marimo edit notebooks/<lesson>.py` to step through code.
 - Verify all Week 2 lessons: `uv run marimo check notebooks/02_*.py`; `uv run python checks/check_week02.py`. Individual `check_*.py` files provide focused re-entry checks.
 - Export: `mkdir -p outputs`; `uv run marimo export html notebooks/02_garden.py -o outputs/02_garden.html --force`.
+- Final Week 2 checkpoint: all five lesson checks and all marimo structural checks pass; `uv sync --locked --offline` succeeds. All five HTML exports exist locally. Browser inspection confirmed predictive panels and Beta density rendering; changing the misclassification report to white updates the posterior to 3/5. Upstream `scripts/`, `homework/`, root README and LICENSE have no changes.
 - Exported HTML is a snapshot; use the live marimo app for reactive Python controls. Generated outputs and environments are ignored.
 - The Codex sandbox required escalation for dependency downloads and marimo's local kernel/server sockets; installation and export succeeded. No global Python packages changed.
 
@@ -68,6 +69,7 @@ Verified 2026-09-26 on macOS arm64:
 - Choices: fixed W L W W W L W L W data connect to the predictive lesson; W L L L reproduces the source's separate Beta(2,4) interval distribution. The R source's ten random GIS-derived outcomes are deliberately replaced, not claimed reproduced. NumPy simulates 10,000 p values with seed 2026; SciPy quantiles provide an exact comparison to the R `PI` operation.
 - Verification: every prefix of both sequences (15 states) agrees with independently integrated/normalized Bernoulli likelihoods. Three interval masses (50%, 89%, 99%) integrate to their stated probability, widen monotonically, and default controls execute. Seeded draws reproduce; empirical quantiles satisfy six-standard-error bounds on their exact CDF values. Order invariance, posterior tail areas, Altair schema, clean marimo check and executable HTML export pass.
 - Exact 99% intervals: Beta(7,4) [0.26488601, 0.92323183]; Beta(2,4) [0.02288122, 0.81490273]. These are central percentile intervals, not highest-density intervals.
+- Keep the Beta plot at 550px with its legend below the plot so the complete [0,1] axis and distribution labels fit the app pane; the exported lesson and aggregate checks were rerun after this adjustment.
 - Differences: omit GIS/projection/spinning globe and interpolation frames; include exact quantiles and explicit density-versus-probability explanations. The plotting grid is not an inference approximation. R was not executed; independent likelihood integration verifies its statistical rule.
 
 ### Six-marble garden and unequal path totals

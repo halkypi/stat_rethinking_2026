@@ -112,9 +112,9 @@ def _(a, alt, b, exact_interval, mo, np, observed_text, pd, previous_a, previous
             x=alt.X("p:Q", title="Probability of water, p", scale=alt.Scale(domain=[0, 1])),
             y=alt.Y("Density:Q", title="Probability density"),
             color=alt.Color("Distribution:N", scale=alt.Scale(
-                domain=["Current posterior", "Before latest outcome"], range=["#167c80", "#989fa8"])),
-            strokeDash="Distribution:N", tooltip=["p:Q", "Density:Q", "Distribution:N"])
-    ).properties(width=650, height=270, title=f"Current distribution: Beta({a}, {b})")
+                domain=["Current posterior", "Before latest outcome"], range=["#167c80", "#989fa8"]), legend=alt.Legend(orient="bottom")),
+            strokeDash=alt.StrokeDash("Distribution:N", legend=alt.Legend(orient="bottom")), tooltip=["p:Q", "Density:Q", "Distribution:N"])
+    ).properties(width=550, height=270, title=f"Current distribution: Beta({a}, {b})")
     mo.vstack([mo.md(f"Observed: **{observed_text}**. Compare the density before and after the latest outcome."), density_chart])
     return density_chart, density_data
 
