@@ -4,7 +4,7 @@ You are taking over an existing multi-session project in:
 
 `halkypi/stat_rethinking_2026`
 
-Current working branch:
+The predecessor agent's branch is:
 
 `project/python-companion`
 
@@ -15,6 +15,26 @@ The project already has substantial completed work. Do not restart it, redesign 
 Your immediate task is to reconstruct the project from repository evidence, inventory all remaining R → Python work, estimate how many future coding sessions will be required, and leave a durable execution roadmap.
 
 Do **not** begin translating Week 4 until the planning pass is complete.
+
+## Branch provenance — mandatory first step
+
+Work on a separate Cortex-owned branch so the repository preserves which agent produced which work.
+
+The Cortex branch must continue **exactly from the latest tip of `project/python-companion`**, not from `main` and not from an older commit.
+
+Before making any project changes:
+
+1. inspect Git status and preserve any unrelated/uncommitted work;
+2. fetch/update refs as needed;
+3. identify and record the current HEAD commit of `project/python-companion`;
+4. create/switch to the dedicated Cortex branch:
+   `agent/cortex-python-companion`;
+5. verify that the new branch's starting commit is exactly the predecessor branch's latest HEAD;
+6. perform all planning and any later Cortex implementation work on `agent/cortex-python-companion` unless Scott explicitly directs otherwise.
+
+Do not merge or rebase `project/python-companion` during this planning pass. Treat it as the predecessor-agent baseline. The Cortex branch should contain the complete prior history plus only Cortex's subsequent commits, making agent provenance visible in Git history.
+
+Record the predecessor base commit SHA in the roadmap so later readers can see the handoff boundary.
 
 ## Internet access
 
@@ -33,15 +53,13 @@ Before making any planning judgment, read:
 3. `python/README.md`;
 4. `python/prompts/001-python-port.md`;
 5. `python/reports/cumulative-report.md`;
-6. the recent commit history on `project/python-companion`;
+6. the recent commit history on `project/python-companion`, especially the commits after the Python-port project began;
 7. all current tracked material under:
    - `python/notebooks/`
    - `python/checks/`
    - `python/src/`
 8. the dependency/runtime files under `python/`;
 9. the complete upstream `scripts/` directory.
-
-Inspect Git status first and preserve unrelated or uncommitted work.
 
 The cumulative report is the durable project spine.
 
@@ -180,9 +198,7 @@ For each estimate, give:
 - major assumptions;
 - the work most likely to dominate the estimate.
 
-Do not pretend precision you do not have.
-
-Use ranges where justified.
+Do not pretend precision you do not have. Use ranges where justified.
 
 ## 7. Build a proposed session roadmap
 
@@ -195,7 +211,7 @@ Each session should have a coherent pedagogical and implementation boundary.
 
 Prefer grouping work where shared machinery reduces cost.
 
-Examples:
+Examples may include:
 
 - categorical means + contrasts;
 - height-adjusted models / causal interpretation;
@@ -278,16 +294,17 @@ Create:
 
 It should contain:
 
-1. current state;
-2. source inventory;
-3. scope tiers;
-4. complexity assessment;
-5. optimistic / expected / conservative session estimates;
-6. recommended session roadmap;
-7. critical-path risks;
-8. reuse opportunities;
-9. completion definition;
-10. exactly one recommended next implementation session.
+1. handoff provenance, including the `project/python-companion` base commit SHA and Cortex branch name;
+2. current state;
+3. source inventory;
+4. scope tiers;
+5. complexity assessment;
+6. optimistic / expected / conservative session estimates;
+7. recommended session roadmap;
+8. critical-path risks;
+9. reuse opportunities;
+10. completion definition;
+11. exactly one recommended next implementation session.
 
 Keep `python/reports/cumulative-report.md` as the execution spine.
 
@@ -307,6 +324,7 @@ Scott has authorized frequent commits for this project.
 
 For this planning pass:
 
+- all commits must be on `agent/cortex-python-companion`;
 - do not modify upstream R material;
 - do not begin implementation;
 - commit the roadmap once the inventory and estimate are internally consistent;
@@ -318,6 +336,7 @@ Suggested commit:
 
 The commit body should summarize:
 
+- predecessor/base commit SHA;
 - files inspected;
 - number of remaining distinct concepts;
 - expected session range;
@@ -328,6 +347,7 @@ The commit body should summarize:
 
 When finished, report succinctly:
 
+- Cortex branch name and predecessor base commit SHA;
 - how much of the source corpus is already accounted for;
 - how many distinct work units remain;
 - optimistic / expected / conservative session counts;
