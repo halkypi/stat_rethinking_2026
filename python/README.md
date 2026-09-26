@@ -35,13 +35,42 @@ python/
     cumulative-report.md
 ```
 
-Environment files such as `pyproject.toml` and `uv.lock` should be added when the first executable lesson establishes the actual dependency set.
+The Python 3.13 environment is defined by `pyproject.toml` and `uv.lock`. Only dependencies used by completed lessons are installed.
 
 ## Current state
 
-Project scaffolding established on `project/python-companion`.
+The first Garden of Forking Data lesson is complete: [02_garden.py](notebooks/02_garden.py).
+It teaches exact Bayesian updating for three candidate bags with an observation slider,
+compatible-path grids, prior/posterior bars, and sequential updating. The rest of Week 2
+remains in progress; the cumulative report identifies the next chunk.
 
-The next execution goal is to inventory the Week 2 / Garden of Forking Data scripts and complete the smallest coherent Bayesian-updating lesson as a verified marimo notebook. Avoid beginning with the GIS/animation-heavy globe script.
+## Run the lesson
+
+From the repository root:
+
+```sh
+cd python
+uv sync --locked
+uv run marimo edit notebooks/02_garden.py
+```
+
+Use `marimo run` instead of `marimo edit` for a reading view. Set the slider to 0
+and advance through blue, white, blue. The final bag probabilities are 15%, 40%, 45%.
+
+## Verify and export
+
+From `python/`:
+
+```sh
+uv run marimo check notebooks/02_garden.py
+uv run python checks/check_garden.py
+mkdir -p outputs
+uv run marimo export html notebooks/02_garden.py -o outputs/02_garden.html --force
+```
+
+The HTML export is a saved snapshot; reactive controls require the live app.
+Checks execute all four observation states and compare path enumeration with
+independent analytical probabilities. Original R files are unchanged.
 
 ## Definition of done for a lesson
 
