@@ -218,6 +218,8 @@ Good examples:
 
 Prefer several coherent commits over one giant end-of-session commit. Do not commit broken intermediate states merely to increase commit count.
 
+Scott reiterated a preference for more frequent commits on 2026-09-26. Commit independently useful, verified helpers, runtime fixes, and lesson extensions promptly instead of waiting for an entire lesson or session. Each commit should explain its verification and remaining scope; keep incomplete lessons explicitly incomplete in the report. A documentation-only checkpoint does not require rerunning unchanged statistical fits.
+
 Never mix unrelated cleanup into a translation commit.
 
 ## Stop conditions

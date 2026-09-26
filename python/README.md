@@ -102,6 +102,38 @@ HTML exports save rendered outputs; reactive controls require the live app.
 Original R files remain unchanged. Detailed fidelity decisions and verification
 results are in [the cumulative report](reports/cumulative-report.md).
 
+### Optional Terminal handoff for long checks
+
+Long checks can run directly in Terminal while the agent turn is finished. These
+commands use local Python and do not call an OpenAI model. For example:
+
+```sh
+cd /Users/shalkyard/GitHub/stat_rethinking_2026/python
+uv sync --locked
+mkdir -p outputs
+set -o pipefail
+uv run python -u checks/check_height_weight.py 2>&1 | tee outputs/check_height_weight.log
+echo "Exit status: $?"
+```
+
+Run the exit-status command immediately after the check; zero indicates success.
+The check fits both synthetic and adult data, verifies them independently, and
+saves NetCDF samples and diagnostic JSON under `outputs/`. Give the agent the log
+path and exit status when finished so it can review the evidence before marking
+the work complete. A failed check remains incomplete even if some artifacts exist.
+
+A separate export executes another fresh fit:
+
+```sh
+uv run marimo export html notebooks/03_height_weight.py -o outputs/03_height_weight.html --force > outputs/export_height_weight.log 2>&1
+echo "Exit status: $?"
+```
+
+The current checks and export already passed; rerun only when relevant changes
+or unresolved concerns justify it. For a future chunk, use its specific check
+and notebook filenames. User-run execution changes who monitors the process,
+not the required sampling or verification standards.
+
 ## Definition of done for a lesson
 
 A lesson is complete when:
