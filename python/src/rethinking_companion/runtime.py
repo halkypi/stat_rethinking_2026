@@ -9,9 +9,11 @@ def configure_runtime():
     root.mkdir(parents=True, exist_ok=True)
     flags = f"base_compiledir={root / 'pytensor'}"
     # This macOS toolchain rejects PyTensor's -ld64 flag. A supported Python
-    # linker avoids system/compiler changes; user-supplied flags take precedence.
+    # linker avoids system/compiler changes. Without C, fusion runs Python
+    # scalar loops; excluding it retains efficient NumPy operations.
+    # User-supplied flags take precedence.
     if sys.platform == "darwin":
-        flags += ",cxx="
+        flags += ",cxx=,optimizer_excluding=fusion"
     os.environ.setdefault("PYTENSOR_FLAGS", flags)
     os.environ.setdefault("MPLCONFIGDIR", str(root / "matplotlib"))
     os.environ.setdefault("NUMBA_CACHE_DIR", str(root / "numba"))

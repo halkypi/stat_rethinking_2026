@@ -19,7 +19,7 @@ Verified 2026-09-26 on macOS arm64:
 - Exported HTML is a snapshot; use the live marimo app for reactive Python controls. Generated outputs and environments are ignored.
 - The Codex sandbox required escalation for dependency downloads and marimo's local kernel/server sockets; installation and export succeeded. No global Python packages changed.
 
-- The companion is now an editable package under `python/src/rethinking_companion`; run `uv sync --locked` after checkout. Plotting and PyTensor caches use ignored `python/.cache`. On this macOS toolchain native PyTensor linking fails with `ld: library d64 not found`; `runtime.py` defaults to supported `cxx=` execution on macOS (explicit user PYTENSOR_FLAGS override this). Four-chain fits take about seven seconds here, with identical statistical validation. No compiler/system settings were changed.
+- The companion is now an editable package under `python/src/rethinking_companion`; run `uv sync --locked` after checkout. Plotting and PyTensor caches use ignored `python/.cache`. On this macOS toolchain native PyTensor linking fails with `ld: library d64 not found`; `runtime.py` defaults to supported `cxx=,optimizer_excluding=fusion` execution on macOS (explicit user PYTENSOR_FLAGS override this). Excluding fusion avoids slow Python scalar loops in the compiler-free backend; four-chain fits take roughly 5–30 seconds here. All previously verified Gaussian fits were rerun after this optimizer change and retained their diagnostic results. No compiler/system settings were changed.
 - ArviZ 0.23.4 writes an import-warning timestamp under the macOS user cache; sandboxed model checks/export required escalation for this library behavior. Its import cache location is not configurable by the project.
 
 ## Progress
@@ -42,6 +42,10 @@ Verified 2026-09-26 on macOS arm64:
 | `scripts/03_prior_pred_OLS.r`: linear prior and updating model | `python/notebooks/03_gaussian_regression.py` and shared Gaussian helper | complete | Four-chain NUTS against exact posterior, 2D quadrature, sequential updates, predictive checks, notebook states and export |
 
 | `scripts/03_prior_pred_OLS.r`: quadratic/cubic mean functions | Existing `03_gaussian_regression.py` | complete | Both NUTS fits, exact covariance/predictions, source outlier edit, prefix controls, default export |
+
+| `scripts/03_howell_new_weight_model.r`: synthetic validation and first adult weight fit | `python/notebooks/03_height_weight.py` | complete | Refined/expanded independent integration, both full fits, diagnostic/support/predictive checks, notebook charts and export |
+| `scripts/03_howell_plots.r`: prior-line illustration | Existing prior-function lessons | deferred | Mechanism already represented; reversed response/predictor direction is not claimed to be the same fitted model |
+| `scripts/03_ptolemaic_model.R` | — | deferred | Geocentric/heliocentric presentation animation; no fitted statistical model |
 
 ## Completed Work
 
@@ -125,6 +129,17 @@ Verified 2026-09-26 on macOS arm64:
 - Verification: both full four-chain fits pass the original exact-posterior mean/covariance, predictive-noise and quantile checks; explicit power-by-power predictions equal joint matrix predictions. UI states 0/8/9/10, chart schemas and marimo export pass. Predictive quantile tolerances now use quantile-specific ESS rather than a fixed tolerance, preserving Monte Carlo error awareness in correlated fits.
 - Quadratic diagnostics: R-hat 1.000464, min bulk ESS 3040.8, tail ESS 3316.8, zero divergences, min BFMI 1.075, max depth 4. Cubic: R-hat 1.002193, bulk ESS 2324.1, tail ESS 2947.8, zero divergences, BFMI 1.026, depth 5. Saved fits/JSON reports are ignored, reproducible outputs.
 
+### Centered positive-slope regression with unknown residual scale
+
+- Source: `scripts/03_howell_new_weight_model.r`, initial validation and first adult model through its interval plots, before animation. Artifacts: `03_height_weight.py`, `checks/check_height_weight.py`, shared `height_weight.py`, checksummed `data/Howell1.csv` with attribution, GPL-3 license copy and immutable provenance.
+- Preserve a ~ Normal(60,10), b ~ LogNormal(0,1), sigma ~ Uniform(0,10), W ~ Normal(a+b*(H−Hbar),sigma). Adult filter age≥18 gives 352 of 544 rows, Hbar=154.5970926 cm. Keep that training center for all predictions. The notebook displays actual fitted priors, residuals and a replicated-weight-SD check; positive slope does not imply positive Normal outcomes or establish causation.
+- Synthetic validation: 100 heights Uniform(130,170), generating a=70,b=.5,sigma=5, local seed 604 (source unseeded). Full posterior means/covariance match independent integration and the realized 99% intervals include all three truths; this is one recovery test, not SBC.
+- Independent oracle: integrate the Normal intercept analytically conditional on b,sigma using centered sufficient statistics, then integrate b and sigma on a fine trapezoid grid. Double resolution and expand the b bound from 3 to 6; means agree within 1e-5, covariances within rtol=1e-4/atol=1e-6, boundary mass <1e-10. Compare NUTS means and full covariance with Monte Carlo error bounds; check positive slope, sigma support, training/new-input dimensions, retained centering, standardized prior/posterior predictive noise and notebook charts.
+- Adult integrated posterior means (SD): a=44.99822 (0.22700) kg; b=0.628689 (0.029354) kg/cm; sigma=4.256974 (0.161651) kg. NUTS diagnostics: R-hat 1.001052, min bulk ESS 5573.5, tail ESS 4487.5, zero divergences, min BFMI 1.0233, max depth 4. Synthetic diagnostics: R-hat 1.001476, bulk ESS 4653.3, tail ESS 3198.8, zero divergences, BFMI 1.0573, depth 3.
+- Full notebook export reruns the adult fit successfully. Its source-matched intervals are 99% equal-tailed mean uncertainty and 89% individual prediction. Forecasts to 190 cm are labeled extrapolation.
+- Runtime verification found compiler-free elementwise fusion was unnecessarily slow (163 seconds for a synthetic fit). Excluding this supported optimizer pass reduced full fits to about 27 seconds; all linear/quadratic/cubic exact-oracle checks were repeated successfully. Short performance benchmarks were not treated as accepted inference.
+- Differences/deferred scope: NUTS replaces quap. Original R data files are untouched; official rethinking data are vendored only under python/. The source's repeated-fit point-estimate experiment is not presented as calibration and is deferred as a repeated validation demonstration. Adult animation, grouped models and all-age polynomial/log models remain separate/deferred work.
+
 ## Shared Translation Patterns
 
 - R recursive garden branches → `itertools.product` over physical-marble IDs; compatibility is the conjunction of observed-color matches.
@@ -152,6 +167,10 @@ Verified 2026-09-26 on macOS arm64:
 - Independent first-model oracle: Normal-prior, known-noise regression has V=(I+XᵀX/σ²)⁻¹, m=VXᵀy/σ². Use linear solves. Predictive covariance includes observation variance as well as X V Xᵀ.
 - API references used: [PyMC posterior predictions](https://www.pymc.io/projects/docs/en/v5.24.0/api/generated/pymc.sample_posterior_predictive.html), [ArviZ diagnostics](https://python.arviz.org/en/v0.21.0/api/diagnostics.html); installed signatures/source were checked for version-specific behavior.
 
+- Positive slope `dlnorm(0,1)` → `pm.LogNormal(mu=0,sigma=1)`; Uniform residual SD → bounded PyMC variable with automatic transform. Independently check support and density implications, not only sampler convergence.
+- Preserve the training centering constant as saved fit metadata. A new prediction grid must never redefine the intercept by using its own average.
+- Local source data: immutable upstream URL + SHA-256 + schema/row checks, provenance and upstream license; no network dependency during lesson execution.
+
 ## Known Issues / Deferred Fidelity
 
 - Distinct Week 2 statistical concepts are complete. Incidental one/two/three-bag drawing variants use the same verified counting rule; exact radial presentation is not reproduced.
@@ -165,7 +184,7 @@ Verified 2026-09-26 on macOS arm64:
 
 ## Next Chunk
 
-Translate the **centered positive-slope adult weight model**, including its initial synthetic-data validation, in `scripts/03_howell_new_weight_model.r` (through the first adult fit and its mean/predictive intervals; stop before the adult animation). Use a ~ Normal(60,10), b ~ LogNormal(0,1), sigma ~ Uniform(0,10), W ~ Normal(a+b*(H−Hbar),sigma). Establish a checksummed local Howell1 dataset from the official rethinking repository with provenance; filter age≥18 and preserve the training mean height for prediction. Fit synthetic a=70,b=.5,sigma=5 data first, then actual adults. Independently integrate the posterior using sufficient statistics and the analytic conditional distribution for a, check diagnostics and predictive shapes/moments, and distinguish the source's 99% mean interval from its 89% prediction interval. Reuse established PyMC/ArviZ conventions; add no dependencies unless required. Later sex-specific models and higher-degree adult/child models are separate chunks.
+Begin the canonical **group means and posterior contrasts** lesson from the first `W ~ S` block of `scripts/04_height_weight_sex_categorical.r` (stop before `W ~ S + H`). Fit adult weights with indexed a[S] ~ Normal(60,10) and shared sigma ~ Uniform(0,10), using the existing checksummed Howell1 data and source mapping male=0/1 → Female/Male. Compare the posterior mean-weight contrast M−F with the much wider contrast between two independently predicted individuals, and estimate P(individual contrast>0). Preserve paired joint posterior draws. Independently integrate sigma with conditional Normal group means to check posterior/contrast moments and predictive probabilities, plus the established four-chain diagnostic gates. State that a statistical group contrast alone does not identify a causal effect. Existing dependencies suffice; later height-adjusted and full SCM models should extend or follow this lesson without duplicating its basic indexing concept.
 
 ## Re-entry Instructions
 

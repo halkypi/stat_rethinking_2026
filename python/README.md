@@ -58,6 +58,9 @@ with exact random-walk probabilities and a normal approximation, and
 verified PyMC/ArviZ fit. The latter compares NUTS with an exact posterior and
 separates mean uncertainty from predictive uncertainty. The same notebook includes
 quadratic and cubic mean functions, with exact posterior checks for every fit.
+[Height–weight regression](notebooks/03_height_weight.py) adds centering, a positive
+slope, unknown residual scale, simulated recovery and actual Howell1 adults;
+independent numerical integration verifies that constrained posterior.
 
 ## Run the lessons
 
@@ -90,6 +93,10 @@ controls, and compares calculations with independent exact probabilities,
 numerical integration or sampling-error bounds. Focused `checks/check_*.py`
 scripts are also available. Replace the filename in the export command to save
 another lesson; generated snapshots are ignored by Git.
+
+Model-fitting lessons run four chains and can take roughly 5–30 seconds after import
+on this machine. The macOS runtime uses a verified compiler-free PyTensor configuration;
+see the cumulative report for the toolchain reason and override.
 
 HTML exports save rendered outputs; reactive controls require the live app.
 Original R files remain unchanged. Detailed fidelity decisions and verification
