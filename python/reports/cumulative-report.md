@@ -27,7 +27,8 @@ Verified 2026-09-26 on macOS arm64:
 | `scripts/02_garden_plots_lib.R`: six-marble and misclassification examples | — | not-started | Outside first lesson scope |
 | `scripts/02_garden_animation.r` | — | deferred | Static path grid preserves first lesson's path-counting concept |
 | `scripts/02_predictive_simulation.r`: statistical core | `python/notebooks/02_predictive_simulation.py` | complete | Both modes × four sample sizes; 50,000 seeded draws each, independent quadrature, moments, chart schemas, marimo HTML export |
-| `scripts/02_globe_tossing_updating.r` | — | deferred | GIS/animation-heavy; not first chunk |
+| `scripts/02_globe_tossing_updating.r`: Beta updating and percentile interval | `python/notebooks/02_beta_updating.py` | complete | Every prefix, likelihood quadrature, three interval levels, reproducible quantiles, marimo HTML export |
+| `scripts/02_globe_tossing_updating.r`: GIS and animation | — | deferred | Statistical core is complete without presentation machinery |
 
 ## Completed Work
 
@@ -58,6 +59,15 @@ Verified 2026-09-26 on macOS arm64:
 - Verification: clean marimo check and executable HTML export; whole app at both modes × four sample sizes; support, shapes, reproducibility, stable prefixes, conditional normalization and valid chart schemas. Independently integrate binomial × Beta for every count; compare exact moments and 50,000-draw frequencies using six-standard-error bounds. Maximum absolute frequency errors: posterior 0.00301, prior 0.00212.
 - Differences: vectorized NumPy draws replace R's interleaved stream (not bit-identical); relative frequencies replace raw counts; exact reference and prior-mode control are explicit additions. Frame animation and platform-specific output code are deferred. No MCMC diagnostics apply.
 
+### Continuous Beta updating and percentile intervals
+
+- Source: statistical update loop and final interval example in `scripts/02_globe_tossing_updating.r`; artifacts: `python/notebooks/02_beta_updating.py`, `python/checks/check_beta_updating.py`, ignored HTML export.
+- Lesson: each water/land observation increments the corresponding Beta shape parameter; compare the previous and current density, then interpret posterior means, tail areas and equal-tailed credible intervals.
+- Choices: fixed W L W W W L W L W data connect to the predictive lesson; W L L L reproduces the source's separate Beta(2,4) interval distribution. The R source's ten random GIS-derived outcomes are deliberately replaced, not claimed reproduced. NumPy simulates 10,000 p values with seed 2026; SciPy quantiles provide an exact comparison to the R `PI` operation.
+- Verification: every prefix of both sequences (15 states) agrees with independently integrated/normalized Bernoulli likelihoods. Three interval masses (50%, 89%, 99%) integrate to their stated probability, widen monotonically, and default controls execute. Seeded draws reproduce; empirical quantiles satisfy six-standard-error bounds on their exact CDF values. Order invariance, posterior tail areas, Altair schema, clean marimo check and executable HTML export pass.
+- Exact 99% intervals: Beta(7,4) [0.26488601, 0.92323183]; Beta(2,4) [0.02288122, 0.81490273]. These are central percentile intervals, not highest-density intervals.
+- Differences: omit GIS/projection/spinning globe and interpolation frames; include exact quantiles and explicit density-versus-probability explanations. The plotting grid is not an inference approximation. R was not executed; independent likelihood integration verifies its statistical rule.
+
 ## Shared Translation Patterns
 
 - R recursive garden branches → `itertools.product` over physical-marble IDs; compatibility is the conjunction of observed-color matches.
@@ -71,6 +81,8 @@ Verified 2026-09-26 on macOS arm64:
 - R `rbeta` / `rbinom` → a local NumPy `Generator.beta` / `Generator.binomial`; use one parameter draw per replicated group. SciPy distribution functions provide exact reference probabilities.
 - Compare Monte Carlo frequencies against sampling-error bounds, and verify exact mixture formulas by independent numerical integration.
 
+- R `PI(draws, mass)` → `np.quantile(draws, [(1-mass)/2, (1+mass)/2])`; use exact distribution quantiles where available and check covered area independently.
+
 ## Known Issues / Deferred Fidelity
 
 - Remaining sections of the static R library are not claimed complete.
@@ -82,7 +94,7 @@ Verified 2026-09-26 on macOS arm64:
 
 ## Next Chunk
 
-Translate the statistical core of `scripts/02_globe_tossing_updating.r`: sequential Beta(1+W,1+L) updating and the final Beta(2,4) 99% percentile-interval example, without GIS or animation. This supplies the parameter-learning step behind the predictive lesson. Reuse the fixed nine-outcome sequence from the predictive source (explicitly replacing random GIS outcomes) and include a Beta(2,4) example. Use SciPy quantiles and seeded draws for the interval, with Altair density/interval plots. Verify every observation prefix against normalized Bernoulli likelihoods, order invariance, exact interval probability and empirical quantile accuracy. Existing dependencies suffice.
+Translate the six-marble B–W–B example in `scripts/02_garden_plots_lib.R` (the block with `n <- 6`, `nblue <- 3`). Build a small marimo comparison with the existing two-blue/four-marble bag: 27/216 and 8/64 paths give the same likelihood 1/8. This completes the remaining ordinary garden example and teaches why path counts must be divided by their totals when gardens differ in size. Use exact enumeration, an Altair probability comparison and no new dependencies. Verify every length-0–3 sequence against Bernoulli probabilities and execute the whole lesson.
 
 ## Re-entry Instructions
 
