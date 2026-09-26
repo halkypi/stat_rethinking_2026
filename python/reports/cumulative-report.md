@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build a faithful, executable Python companion to Statistical Rethinking 2026, preserving statistical reasoning and teaching order. The first milestone is achieved: one complete beginner lesson is available for Scott to step through.
+Build a faithful, executable Python companion to Statistical Rethinking 2026, preserving statistical reasoning and teaching order. The first milestone is achieved. Five executable lessons now cover the distinct statistical concepts in the supplied Week 2 scripts; GIS, animation and incidental drawing variants remain deferred. Week 2 homework has not been ported.
 
 ## Environment
 
@@ -12,8 +12,8 @@ Verified 2026-09-26 on macOS arm64:
 - uv 0.11.7; project-local `.venv`, reproducible dependencies in `uv.lock`.
 - NumPy 2.5.3, pandas 3.0.6, Altair 6.3.0, marimo 0.25.0.
 - SciPy 1.18.1 now supplies Beta, binomial and beta-binomial operations and independent quadrature. PyMC and ArviZ are not installed: completed lessons use direct simulation and exact inference, not MCMC.
-- From `python/`: `uv sync --locked`, then `uv run marimo edit notebooks/02_garden.py`.
-- Verification: `uv run marimo check notebooks/02_garden.py`; `uv run python checks/check_garden.py`.
+- From `python/`: `uv sync --locked`; `uv run marimo run notebooks` opens the lesson gallery. Use `uv run marimo edit notebooks/<lesson>.py` to step through code.
+- Verify all Week 2 lessons: `uv run marimo check notebooks/02_*.py`; `uv run python checks/check_week02.py`. Individual `check_*.py` files provide focused re-entry checks.
 - Export: `mkdir -p outputs`; `uv run marimo export html notebooks/02_garden.py -o outputs/02_garden.html --force`.
 - Exported HTML is a snapshot; use the live marimo app for reactive Python controls. Generated outputs and environments are ignored.
 - The Codex sandbox required escalation for dependency downloads and marimo's local kernel/server sockets; installation and export succeeded. No global Python packages changed.
@@ -25,8 +25,9 @@ Verified 2026-09-26 on macOS arm64:
 | Week 2 / `scripts/02_*` inventory | This report | complete | All four scripts inspected |
 | `scripts/02_garden_plots_lib.R`: three four-marble bags, B–W–B | `python/notebooks/02_garden.py` | complete | Full marimo execution, HTML export, all four slider states, exact enumeration and Altair schema checks |
 | `scripts/02_garden_plots_lib.R`: six-marble example | `python/notebooks/02_garden_sizes.py` | complete | Four controls, 180 exact rational checks, marimo HTML export |
-| `scripts/02_garden_plots_lib.R`: final manual misclassification example | — | not-started | Next chunk |
-| `scripts/02_garden_animation.r` | — | deferred | Static path grid preserves first lesson's path-counting concept |
+| `scripts/02_garden_plots_lib.R`: final manual misclassification example | `python/notebooks/02_misclassification.py` | complete | Six control states, 18 rational Bayes cases, literal R parent mapping, marimo export |
+| `scripts/02_garden_plots_lib.R`: earlier `garden2` drawing draft | — | deferred | Final manual conditional-observation tree is the canonical statistical source |
+| `scripts/02_garden_animation.r`: frame animation | — | deferred | Its path-counting concept is covered by the garden lessons and exhaustive binary-sequence checks |
 | `scripts/02_predictive_simulation.r`: statistical core | `python/notebooks/02_predictive_simulation.py` | complete | Both modes × four sample sizes; 50,000 seeded draws each, independent quadrature, moments, chart schemas, marimo HTML export |
 | `scripts/02_globe_tossing_updating.r`: Beta updating and percentile interval | `python/notebooks/02_beta_updating.py` | complete | Every prefix, likelihood quadrature, three interval levels, reproducible quantiles, marimo HTML export |
 | `scripts/02_globe_tossing_updating.r`: GIS and animation | — | deferred | Statistical core is complete without presentation machinery |
@@ -77,6 +78,16 @@ Verified 2026-09-26 on macOS arm64:
 - Verification: every slider state executes; all 180 combinations of bag sizes 4/6, possible blue counts, and binary sequences of length 0–3 agree with independent rational Bernoulli likelihoods, including zero/one probability boundaries. Altair schema, marimo check and executable HTML export pass. No simulation or dependencies added.
 - Difference: static probability comparison replaces radial geometry; it explicitly explains that cross-hypothesis raw-count normalization only works when per-path probability scales are equal.
 
+### Misclassification: latent states and observed reports
+
+- Source: final manual tree after `# try doing it manually` in `scripts/02_garden_plots_lib.R`. Artifacts: `python/notebooks/02_misclassification.py`, `python/checks/check_misclassification.py`, ignored HTML export.
+- Statistical lesson: distinguish the known bag composition, latent true color of one draw, and observed report; sum joint path probabilities over latent states, then condition on the report. Both true colors are reported correctly with probability 2/3.
+- Source mapping: parents 1–3 are blue and parent 4 white. R's reversed `pts[5-j]` connects j=1's white parent to two white/one blue reports; j>1 blue parents get two blue/one white reports. The twelve equally likely leaves contain joint counts BB=6, BW=3, WB=1, WW=2.
+- Exact results: P(report blue)=7/12; P(true blue | report blue)=6/7; P(true blue | report white)=3/5. Conditioning reverses the question, so reporter accuracy is not the posterior probability of true color.
+- Translation: exact `Fraction` enumeration, an Altair joint-probability heatmap, a complete path table and prior/posterior bars. A report control and two explicitly labeled teaching extensions (uninformative/perfect reporting) show when data leave the prior unchanged or identify truth exactly.
+- Verification: six UI states, normalized joints, chart schemas, 18 base-rate/sensor/report cases against independent rational Bayes calculations, and a literal reconstruction of the R parent-index/report mapping. Clean marimo check and executable HTML export pass. The aggregate `checks/check_week02.py` runs all five lessons' checks in isolated processes.
+- Differences: replace radial graphics with joint probabilities; do not reuse the earlier `garden2` draft, which uses parent-independent second-ring possibilities and does not represent this sensor model. This distinction is resolved by following the explicit final manual code; no upstream changes are made.
+
 ## Shared Translation Patterns
 
 - R recursive garden branches → `itertools.product` over physical-marble IDs; compatibility is the conjunction of observed-color matches.
@@ -92,18 +103,22 @@ Verified 2026-09-26 on macOS arm64:
 
 - R `PI(draws, mass)` → `np.quantile(draws, [(1-mass)/2, (1+mass)/2])`; use exact distribution quantiles where available and check covered area independently.
 
+- Observation error trees → enumerate joint true-state/report paths, marginalize by summation, then normalize compatible paths; preserve the direction of conditioning.
+
 ## Known Issues / Deferred Fidelity
 
-- The final misclassification section of the static R library remains pending; ordinary four- and six-marble garden concepts are complete.
+- Distinct Week 2 statistical concepts are complete. Incidental one/two/three-bag drawing variants use the same verified counting rule; exact radial presentation is not reproduced.
+- The earlier `garden2` drawing draft remains unported in favor of the explicit final manual misclassification model.
+- Week 2 homework is outside this source-script translation checkpoint.
 - Exact radial geometry, animation, fonts and slide presentation are deferred.
 - The first lesson is finite inference, not a continuous grid approximation.
 - Future sampling translations require statistical agreement rather than R-identical random streams.
-- GIS/globe graphics and nontrivial `rethinking` model translations remain deferred.
+- GIS/globe graphics remain deferred; the globe script's Beta updating and interval computations are complete. Nontrivial `rethinking` model translations have not yet been needed.
 - Live interaction needs a running marimo process; exported HTML does not recompute Python.
 
 ## Next Chunk
 
-Translate the final manually drawn misclassification tree in `scripts/02_garden_plots_lib.R`, beginning at `# try doing it manually`. It has three blue and one white true-state branches; each branches into three possible reports, with two correct and one incorrect. Teach latent true color versus reported color, marginalize over true states, and condition on a report. Verify the twelve equally weighted paths independently of Bayes' formula: reported blue has probability 7/12 and P(true blue | reported blue) = 6/7; reported white gives P(true blue | reported white) = 3/5. Use a marimo lesson with an Altair joint-probability chart, existing dependencies, and explicit source mapping. The earlier `garden2` attempt is not the canonical conditional-observation model; document its difference rather than translating its drawing recursion.
+Begin Week 3 with the **football-field random walk and combinatorial path-count block only** in `scripts/03_gaussian_generative_sim.r` (from the top through `# ways to get x in n tosses`, before `# growth model gaussian`). This connects Week 2 path counting to approximately Gaussian sums. Simulate 1,000 independent symmetric ±1 walkers with local seed 384 and an interactive number-of-steps control; display endpoint frequencies with an exact binomial reference and a clearly labeled normal approximation using Altair. Preserve the source's indexing detail: 100 animation frames contain an initial zero-step state followed by 99 actual moves. Its separate combinatorial example uses 50 moves. Verify position parity/support, seeded reproducibility, mean/variance against 0 and number of moves, and exact masses `choose(n,k)/2**n` under x=2k−n. Existing NumPy/SciPy/Altair/marimo dependencies suffice. Defer animation and the later growth-model block; inspect that block separately before translating because its vector-valued `gf` recycling needs interpretation.
 
 ## Re-entry Instructions
 

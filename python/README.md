@@ -39,41 +39,56 @@ The Python 3.13 environment is defined by `pyproject.toml` and `uv.lock`. Only d
 
 ## Current state
 
-The first Garden of Forking Data lesson is complete: [02_garden.py](notebooks/02_garden.py).
-It teaches exact Bayesian updating for three candidate bags with an observation slider,
-compatible-path grids, prior/posterior bars, and sequential updating. The [predictive simulation lesson](notebooks/02_predictive_simulation.py) adds prior and
-posterior predictive counts, seeded simulation and an exact beta-binomial comparison.
-The [Beta-updating lesson](notebooks/02_beta_updating.py) connects observations to
-continuous posterior densities and credible intervals. The [six-marble comparison](notebooks/02_garden_sizes.py) explains normalization
-when path totals differ. The misclassification example remains to be translated; the cumulative report identifies the next chunk.
+The distinct statistical concepts in the supplied Week 2 scripts are complete
+as five executable lessons. Suggested learning order:
 
-## Run the lesson
+| Lesson | Concept |
+|---|---|
+| [Finite garden](notebooks/02_garden.py) | Path counting, likelihood and Bayesian updating |
+| [Garden sizes](notebooks/02_garden_sizes.py) | Different path totals can give the same likelihood |
+| [Misclassification](notebooks/02_misclassification.py) | True states, imperfect reports and conditioning |
+| [Beta updating](notebooks/02_beta_updating.py) | Continuous parameter uncertainty and credible intervals |
+| [Predictive simulation](notebooks/02_predictive_simulation.py) | Prior/posterior predictive counts and exact beta-binomial checks |
+
+Animation, GIS and incidental drawing variants are deferred. Week 2 homework
+has not been translated. The cumulative report names the next source-backed
+chunk: Week 3's symmetric random walk and combinatorial path counts.
+
+## Run the lessons
 
 From the repository root:
 
 ```sh
 cd python
 uv sync --locked
-uv run marimo edit notebooks/02_garden.py
+uv run marimo run notebooks
 ```
 
-Use `marimo run` instead of `marimo edit` for a reading view. Set the slider to 0
-and advance through blue, white, blue. The final bag probabilities are 15%, 40%, 45%.
+The gallery opens the lessons in a reading view. To inspect and edit individual
+cells, use `uv run marimo edit notebooks/02_beta_updating.py` (or another lesson).
+Controls choose observation prefixes, interval coverage, report accuracy, or
+predictive simulation size. Each lesson states its source and assumptions.
 
 ## Verify and export
 
 From `python/`:
 
 ```sh
-uv run marimo check notebooks/02_garden.py
-uv run python checks/check_garden.py
+uv run marimo check notebooks/02_*.py
+uv run python checks/check_week02.py
 mkdir -p outputs
-uv run marimo export html notebooks/02_garden.py -o outputs/02_garden.html --force
+uv run marimo export html notebooks/02_predictive_simulation.py -o outputs/02_predictive_simulation.html --force
 ```
 
-The HTML export is a saved snapshot; reactive controls require the live app.
-Checks execute all four observation states and compare path enumeration with
-independent analytical probabilities. Original R files are unchanged.
+The aggregate check executes all five lessons in isolated processes, tests their
+controls, and compares calculations with independent exact probabilities,
+numerical integration or sampling-error bounds. Focused `checks/check_*.py`
+scripts are also available. Replace the filename in the export command to save
+another lesson; generated snapshots are ignored by Git.
+
+HTML exports save rendered outputs; reactive controls require the live app.
+Original R files remain unchanged. Detailed fidelity decisions and verification
+results are in [the cumulative report](reports/cumulative-report.md).
 
 ## Definition of done for a lesson
 
