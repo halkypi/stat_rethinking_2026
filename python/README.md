@@ -41,8 +41,9 @@ The Python 3.13 environment is defined by `pyproject.toml` and `uv.lock`. Only d
 
 The first Garden of Forking Data lesson is complete: [02_garden.py](notebooks/02_garden.py).
 It teaches exact Bayesian updating for three candidate bags with an observation slider,
-compatible-path grids, prior/posterior bars, and sequential updating. The rest of Week 2
-remains in progress; the cumulative report identifies the next chunk.
+compatible-path grids, prior/posterior bars, and sequential updating. The [predictive simulation lesson](notebooks/02_predictive_simulation.py) adds prior and
+posterior predictive counts, seeded simulation and an exact beta-binomial comparison.
+The rest of Week 2 remains in progress; the cumulative report identifies the next chunk.
 
 ## Run the lesson
 

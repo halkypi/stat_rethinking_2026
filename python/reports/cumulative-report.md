@@ -11,7 +11,7 @@ Verified 2026-09-26 on macOS arm64:
 - Python 3.13.12 (existing Miniforge interpreter); `.python-version` requests 3.13.
 - uv 0.11.7; project-local `.venv`, reproducible dependencies in `uv.lock`.
 - NumPy 2.5.3, pandas 3.0.6, Altair 6.3.0, marimo 0.25.0.
-- SciPy, PyMC and ArviZ are not installed yet: exact enumeration needs none of them. Add them when a translated lesson needs their statistical operations.
+- SciPy 1.18.1 now supplies Beta, binomial and beta-binomial operations and independent quadrature. PyMC and ArviZ are not installed: completed lessons use direct simulation and exact inference, not MCMC.
 - From `python/`: `uv sync --locked`, then `uv run marimo edit notebooks/02_garden.py`.
 - Verification: `uv run marimo check notebooks/02_garden.py`; `uv run python checks/check_garden.py`.
 - Export: `mkdir -p outputs`; `uv run marimo export html notebooks/02_garden.py -o outputs/02_garden.html --force`.
@@ -26,7 +26,7 @@ Verified 2026-09-26 on macOS arm64:
 | `scripts/02_garden_plots_lib.R`: three four-marble bags, B–W–B | `python/notebooks/02_garden.py` | complete | Full marimo execution, HTML export, all four slider states, exact enumeration and Altair schema checks |
 | `scripts/02_garden_plots_lib.R`: six-marble and misclassification examples | — | not-started | Outside first lesson scope |
 | `scripts/02_garden_animation.r` | — | deferred | Static path grid preserves first lesson's path-counting concept |
-| `scripts/02_predictive_simulation.r` | — | not-started | Selected next chunk |
+| `scripts/02_predictive_simulation.r`: statistical core | `python/notebooks/02_predictive_simulation.py` | complete | Both modes × four sample sizes; 50,000 seeded draws each, independent quadrature, moments, chart schemas, marimo HTML export |
 | `scripts/02_globe_tossing_updating.r` | — | deferred | GIS/animation-heavy; not first chunk |
 
 ## Completed Work
@@ -49,6 +49,15 @@ Verified 2026-09-26 on macOS arm64:
 - Verification: `marimo check`, direct script execution, `App.run` at every slider state, valid schemas for all three charts, 15 binary sequences of length 0–3 against analytic Bernoulli likelihoods, equal and unequal priors, normalization, order invariance, and executable HTML export. Browser inspection confirmed charts render and moving the slider to 0 reactively restores the prior.
 - Differences: rectangular path grids replace radial trees; there is no frame animation or golden-ratio geometry. Normalized posterior and a one-draw posterior predictive average make the implicit counting argument explicit. No simulation or MCMC is needed. R was inspected but not executed; equivalence is checked against the source's branching rules and independent exact probabilities.
 
+### Prior and posterior predictive simulation
+
+- Source: `scripts/02_predictive_simulation.r`; artifacts: `python/notebooks/02_predictive_simulation.py`, `python/checks/check_predictive_simulation.py`, ignored HTML export of the same stem.
+- Statistical lesson: draw p from Beta(7,4), then a count from Binomial(9,p); repeat to marginalize parameter uncertainty. The prior mode uses Beta(1,1). Conditional tosses share one p per group.
+- Preserve the three-panel explanation: parameter density and selected p, conditional count distribution and selected count, accumulated predictive frequencies. Default 500 groups and seed label 8675 match the R source. A fixed 50,000-draw pool makes displayed prefixes stable when changing sample count.
+- Add the exact beta-binomial overlay, predictive moments and a warning about plug-in means losing parameter uncertainty. Prior predictive counts are uniform over 0–9. Posterior predictive mean is 63/11 ≈ 5.7273 and variance ≈ 3.4711, versus plug-in variance ≈ 2.0826.
+- Verification: clean marimo check and executable HTML export; whole app at both modes × four sample sizes; support, shapes, reproducibility, stable prefixes, conditional normalization and valid chart schemas. Independently integrate binomial × Beta for every count; compare exact moments and 50,000-draw frequencies using six-standard-error bounds. Maximum absolute frequency errors: posterior 0.00301, prior 0.00212.
+- Differences: vectorized NumPy draws replace R's interleaved stream (not bit-identical); relative frequencies replace raw counts; exact reference and prior-mode control are explicit additions. Frame animation and platform-specific output code are deferred. No MCMC diagnostics apply.
+
 ## Shared Translation Patterns
 
 - R recursive garden branches → `itertools.product` over physical-marble IDs; compatibility is the conjunction of observed-color matches.
@@ -58,6 +67,9 @@ Verified 2026-09-26 on macOS arm64:
 - Altair consumes tidy pandas tables; explicit [0,1] probability axes permit comparisons. Label finite hypothesis weights as probability, not density.
 - `App.run(defs=...)` executes the whole notebook with a substituted control, enabling deterministic verification of every UI state.
 - Validate statistical identities independently from plot schemas; browser inspection checks actual rendering.
+
+- R `rbeta` / `rbinom` → a local NumPy `Generator.beta` / `Generator.binomial`; use one parameter draw per replicated group. SciPy distribution functions provide exact reference probabilities.
+- Compare Monte Carlo frequencies against sampling-error bounds, and verify exact mixture formulas by independent numerical integration.
 
 ## Known Issues / Deferred Fidelity
 
@@ -70,7 +82,7 @@ Verified 2026-09-26 on macOS arm64:
 
 ## Next Chunk
 
-Translate the statistical core of `scripts/02_predictive_simulation.r` into one marimo lesson: Beta(7,4) posterior after 6 water and 3 land observations, then draw p and simulate water counts in 9 future tosses. It follows the current lesson's predictive average by representing continuous parameter uncertainty and a full predictive distribution. Prerequisites: add SciPy for an exact beta-binomial reference and use seeded NumPy beta/binomial draws. Preserve the three-panel explanation with Altair; defer frame animation. Verify shapes, reproducibility, probability normalization, and simulation agreement with exact beta-binomial probabilities (and the Beta(1,1) prior predictive case).
+Translate the statistical core of `scripts/02_globe_tossing_updating.r`: sequential Beta(1+W,1+L) updating and the final Beta(2,4) 99% percentile-interval example, without GIS or animation. This supplies the parameter-learning step behind the predictive lesson. Reuse the fixed nine-outcome sequence from the predictive source (explicitly replacing random GIS outcomes) and include a Beta(2,4) example. Use SciPy quantiles and seeded draws for the interval, with Altair density/interval plots. Verify every observation prefix against normalized Bernoulli likelihoods, order invariance, exact interval probability and empirical quantile accuracy. Existing dependencies suffice.
 
 ## Re-entry Instructions
 
