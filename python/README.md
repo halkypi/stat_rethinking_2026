@@ -52,7 +52,8 @@ as five executable lessons. Suggested learning order:
 
 Animation, GIS and incidental drawing variants are deferred. Week 2 homework
 has not been translated. The cumulative report names the next source-backed
-chunk: Week 3's symmetric random walk and combinatorial path counts.
+chunk in the report. Week 3 now includes [Gaussian sums](notebooks/03_gaussian_sums.py),
+with exact random-walk probabilities and a normal approximation.
 
 ## Run the lessons
 

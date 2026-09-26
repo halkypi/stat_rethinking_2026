@@ -33,6 +33,9 @@ Verified 2026-09-26 on macOS arm64:
 | `scripts/02_globe_tossing_updating.r`: Beta updating and percentile interval | `python/notebooks/02_beta_updating.py` | complete | Every prefix, likelihood quadrature, three interval levels, reproducible quantiles, marimo HTML export |
 | `scripts/02_globe_tossing_updating.r`: GIS and animation | — | deferred | Statistical core is complete without presentation machinery |
 
+| `scripts/03_gaussian_generative_sim.r`: symmetric walk and path counts | `python/notebooks/03_gaussian_sums.py` | complete | All 100 step counts, eight controls, exact enumeration, seeded moments, marimo export |
+| `scripts/03_gaussian_generative_sim.r`: growth-model block | — | deferred | Vector-valued growth-factor recycling needs separate interpretation; not assumed equivalent to independent identical increments |
+
 ## Completed Work
 
 ### Project setup
@@ -90,6 +93,14 @@ Verified 2026-09-26 on macOS arm64:
 - Verification: six UI states, normalized joints, chart schemas, 18 base-rate/sensor/report cases against independent rational Bayes calculations, and a literal reconstruction of the R parent-index/report mapping. Clean marimo check and executable HTML export pass. The aggregate `checks/check_week02.py` runs all five lessons' checks in isolated processes.
 - Differences: replace radial graphics with joint probabilities; do not reuse the earlier `garden2` draft, which uses parent-independent second-ring possibilities and does not represent this sensor model. This distinction is resolved by following the explicit final manual code; no upstream changes are made.
 
+### Week 3: Gaussian sums from discrete paths
+
+- Source: first football-field block and 50-toss combinatorial example in `scripts/03_gaussian_generative_sim.r`. Artifacts: `03_gaussian_sums.py`, `checks/check_gaussian_sums.py`, reproducible HTML export.
+- Concept: many independent ±1 increments produce binomial endpoint masses and approximately Gaussian sums. Keep 1,000 walkers, seed label 384, and the source's 100-frame/99-move distinction; include zero and 50 moves.
+- Use NumPy cumulative sums and exact `math.comb(n,k)/2**n`; Altair shows eight trajectories plus simulated, exact and normal-approximate endpoint probabilities. Normal probabilities integrate width-two bins, respecting lattice spacing; do not compare density heights directly to mass or hide out-of-support mass by renormalizing.
+- Verified all 100 counts for parity/support, exact normalization/symmetry/mean/variance, independent SciPy binomial agreement, seeded reproducibility and six-standard-error simulation bounds. Independently enumerate every path through eight moves. Eight UI choices and both chart schemas pass; marimo check and full export succeed.
+- Difference: no animated field, no R-identical random stream; normal comparison is an explanatory addition. Growth block is deliberately separate because its `runif(..., 1+gf)` recycles 100 bounds across 1,000 individuals.
+
 ## Shared Translation Patterns
 
 - R recursive garden branches → `itertools.product` over physical-marble IDs; compatibility is the conjunction of observed-color matches.
@@ -120,7 +131,7 @@ Verified 2026-09-26 on macOS arm64:
 
 ## Next Chunk
 
-Begin Week 3 with the **football-field random walk and combinatorial path-count block only** in `scripts/03_gaussian_generative_sim.r` (from the top through `# ways to get x in n tosses`, before `# growth model gaussian`). This connects Week 2 path counting to approximately Gaussian sums. Simulate 1,000 independent symmetric ±1 walkers with local seed 384 and an interactive number-of-steps control; display endpoint frequencies with an exact binomial reference and a clearly labeled normal approximation using Altair. Preserve the source's indexing detail: 100 animation frames contain an initial zero-step state followed by 99 actual moves. Its separate combinatorial example uses 50 moves. Verify position parity/support, seeded reproducibility, mean/variance against 0 and number of moves, and exact masses `choose(n,k)/2**n` under x=2k−n. Existing NumPy/SciPy/Altair/marimo dependencies suffice. Defer animation and the later growth-model block; inspect that block separately before translating because its vector-valued `gf` recycling needs interpretation.
+Establish the first PyMC + ArviZ fitting pattern using the **linear Normal-prior, known-noise regression** in `scripts/03_prior_pred_OLS.r` (first prior-predictive and linear-updating blocks). Build one canonical regression lesson: a,b ~ Normal(0,1), y ~ Normal(a+b*x,1), prior and posterior predictions, and observation-prefix learning. Activate the intended 10-point synthetic demonstration explicitly (the source overwrites `n_points` with zero) with a fixed NumPy seed, preserving its generating slope 0.7, noise 0.5 and clipped x. The fitted likelihood's sigma remains 1 as in R. Verify four-chain NUTS with ArviZ diagnostics and independently derived Gaussian posterior means/covariance and predictive moments. Add dependencies locally and document installed versions, parameter naming/dimensions, prior/posterior predictive conventions and diagnostics before reusing the pattern. Defer polynomial extensions until this first fit passes.
 
 ## Re-entry Instructions
 
