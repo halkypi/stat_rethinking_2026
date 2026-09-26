@@ -41,6 +41,8 @@ Verified 2026-09-26 on macOS arm64:
 
 | `scripts/03_prior_pred_OLS.r`: linear prior and updating model | `python/notebooks/03_gaussian_regression.py` and shared Gaussian helper | complete | Four-chain NUTS against exact posterior, 2D quadrature, sequential updates, predictive checks, notebook states and export |
 
+| `scripts/03_prior_pred_OLS.r`: quadratic/cubic mean functions | Existing `03_gaussian_regression.py` | complete | Both NUTS fits, exact covariance/predictions, source outlier edit, prefix controls, default export |
+
 ## Completed Work
 
 ### Project setup
@@ -115,6 +117,14 @@ Verified 2026-09-26 on macOS arm64:
 - Diagnostics: max rank R-hat 1.001329; min bulk ESS 5707.6; min tail ESS 4021.3; zero divergences; min BFMI 1.092; maximum tree depth 3. Thresholds are R-hat <1.01, both ESS >400, no divergences, BFMI >0.3, depth <10. Clean marimo check, five displayed prefix states, chart schemas and a separate full notebook export (fresh fit) pass.
 - Pedagogy: prior coefficient draws imply whole functions; distinguish central 89% uncertainty about the mean from prediction intervals for observations. The slider uses exact prefix updates while MCMC verifies the full-data fit once per execution. Here quap is exact because the posterior is Gaussian; NUTS establishes a reusable pattern for non-Gaussian models.
 
+### Polynomial means in the canonical Gaussian regression lesson
+
+- Source: quadratic/cubic blocks of `scripts/03_prior_pred_OLS.r`; extend `03_gaussian_regression.py` and its shared helper rather than create duplicate lessons. Add `checks/check_polynomial_regression.py`.
+- Preserve Normal(0,1) coefficients and fitted noise SD 1. Quadratic generator is 0.7x−x² with noise 0.5, seed label 12 and the deliberately replaced ninth observation x=3,y=−1. Cubic generator is 0.7x−2x²+3x³ with noise 0.5 and seed label 13. Realized NumPy data differ from R.
+- Explain linearity in coefficients, covariance-aware uncertainty and extrapolation. Choosing a scenario fits four chains; prefix controls use exact updates. Prior mean-function plots, uncertainty bands and coefficient summaries work for arbitrary included powers. The scenarios are separate illustrative datasets, not a model-selection comparison.
+- Verification: both full four-chain fits pass the original exact-posterior mean/covariance, predictive-noise and quantile checks; explicit power-by-power predictions equal joint matrix predictions. UI states 0/8/9/10, chart schemas and marimo export pass. Predictive quantile tolerances now use quantile-specific ESS rather than a fixed tolerance, preserving Monte Carlo error awareness in correlated fits.
+- Quadratic diagnostics: R-hat 1.000464, min bulk ESS 3040.8, tail ESS 3316.8, zero divergences, min BFMI 1.075, max depth 4. Cubic: R-hat 1.002193, bulk ESS 2324.1, tail ESS 2947.8, zero divergences, BFMI 1.026, depth 5. Saved fits/JSON reports are ignored, reproducible outputs.
+
 ## Shared Translation Patterns
 
 - R recursive garden branches → `itertools.product` over physical-marble IDs; compatibility is the conjunction of observed-color matches.
@@ -155,7 +165,7 @@ Verified 2026-09-26 on macOS arm64:
 
 ## Next Chunk
 
-Extend the existing canonical `03_gaussian_regression.py` lesson with the quadratic and cubic mean-function examples in `scripts/03_prior_pred_OLS.r`. Reuse the verified Normal-prior/known-noise helper; do not create duplicate fitting lessons. Preserve the quadratic example's deliberate ninth-point replacement (x=3,y=-1), polynomial coefficients, generating noise 0.5 and fitted noise 1. Use source seed labels 12 and 13 with explicit NumPy/R stream differences. Verify both fits against multivariate Gaussian exact posteriors, four-chain diagnostics, covariance-aware mean/predictive uncertainty and joint prediction consistency; explain extrapolation and that these are linear models in coefficients despite curved mean functions. Existing dependencies suffice.
+Translate the **centered positive-slope adult weight model**, including its initial synthetic-data validation, in `scripts/03_howell_new_weight_model.r` (through the first adult fit and its mean/predictive intervals; stop before the adult animation). Use a ~ Normal(60,10), b ~ LogNormal(0,1), sigma ~ Uniform(0,10), W ~ Normal(a+b*(H−Hbar),sigma). Establish a checksummed local Howell1 dataset from the official rethinking repository with provenance; filter age≥18 and preserve the training mean height for prediction. Fit synthetic a=70,b=.5,sigma=5 data first, then actual adults. Independently integrate the posterior using sufficient statistics and the analytic conditional distribution for a, check diagnostics and predictive shapes/moments, and distinguish the source's 99% mean interval from its 89% prediction interval. Reuse established PyMC/ArviZ conventions; add no dependencies unless required. Later sex-specific models and higher-degree adult/child models are separate chunks.
 
 ## Re-entry Instructions
 

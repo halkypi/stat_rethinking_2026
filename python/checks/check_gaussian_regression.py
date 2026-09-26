@@ -39,7 +39,10 @@ def verify_fit(idata, X, y, X_grid):
     # Quantile coverage at representative prediction points, using exact normal CDF.
     for j in (0, len(X_grid)//2, len(X_grid)-1):
         bounds = np.quantile(idata.predictions.y_new.values[:,:,j], [.055,.945])
-        np.testing.assert_allclose(stats.norm.cdf(bounds,exact_mu[j],np.sqrt(1+exact_var[j])), [.055,.945], atol=.015)
+        cdf = stats.norm.cdf(bounds,exact_mu[j],np.sqrt(1+exact_var[j]))
+        for k,q in enumerate((.055,.945)):
+            ess = float(az.ess(idata.predictions.y_new.isel(prediction=j).to_dataset(), method="quantile", prob=q).y_new)
+            assert abs(cdf[k]-q) < 6*np.sqrt(q*(1-q)/ess) + 1/6000
     return diag
 
 

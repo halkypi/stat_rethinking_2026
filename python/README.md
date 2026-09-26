@@ -56,7 +56,8 @@ chunk in the report. Week 3 now includes [Gaussian sums](notebooks/03_gaussian_s
 with exact random-walk probabilities and a normal approximation, and
 [Gaussian regression](notebooks/03_gaussian_regression.py), the first thoroughly
 verified PyMC/ArviZ fit. The latter compares NUTS with an exact posterior and
-separates mean uncertainty from predictive uncertainty.
+separates mean uncertainty from predictive uncertainty. The same notebook includes
+quadratic and cubic mean functions, with exact posterior checks for every fit.
 
 ## Run the lessons
 

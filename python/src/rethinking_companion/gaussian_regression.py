@@ -15,6 +15,26 @@ def linear_data(seed=2971):
     return x, y
 
 
+def regression_case(kind="Linear"):
+    """Source-backed polynomial scenarios; R and NumPy seed streams differ."""
+    if kind == "Linear":
+        x,y = linear_data()
+        return x,y,1,np.linspace(-2.2,2.2,81)
+    if kind not in ("Quadratic", "Cubic"):
+        raise ValueError(f"Unknown regression case: {kind}")
+    degree = 2 if kind == "Quadratic" else 3
+    rng = np.random.default_rng(12 if degree == 2 else 13)
+    x = np.clip(rng.normal(size=10), -2, 2)
+    mean = .7*x-x*x if degree == 2 else .7*x-2*x*x+3*x**3
+    y = rng.normal(mean,.5)
+    if degree == 2:
+        x[8],y[8] = 3.,-1.  # R x[9], y[9]: deliberately influential observation.
+        grid = np.linspace(-4,5,91)
+    else:
+        grid = np.linspace(x.min()-2,x.max()+2,91)
+    return x,y,degree,grid
+
+
 def design_matrix(x, degree=1):
     return np.vander(np.asarray(x), N=degree+1, increasing=True)
 
