@@ -53,7 +53,10 @@ as five executable lessons. Suggested learning order:
 Animation, GIS and incidental drawing variants are deferred. Week 2 homework
 has not been translated. The cumulative report names the next source-backed
 chunk in the report. Week 3 now includes [Gaussian sums](notebooks/03_gaussian_sums.py),
-with exact random-walk probabilities and a normal approximation.
+with exact random-walk probabilities and a normal approximation, and
+[Gaussian regression](notebooks/03_gaussian_regression.py), the first thoroughly
+verified PyMC/ArviZ fit. The latter compares NUTS with an exact posterior and
+separates mean uncertainty from predictive uncertainty.
 
 ## Run the lessons
 

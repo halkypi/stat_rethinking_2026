@@ -11,13 +11,16 @@ Verified 2026-09-26 on macOS arm64:
 - Python 3.13.12 (existing Miniforge interpreter); `.python-version` requests 3.13.
 - uv 0.11.7; project-local `.venv`, reproducible dependencies in `uv.lock`.
 - NumPy 2.5.3, pandas 3.0.6, Altair 6.3.0, marimo 0.25.0.
-- SciPy 1.18.1 now supplies Beta, binomial and beta-binomial operations and independent quadrature. PyMC and ArviZ are not installed: completed lessons use direct simulation and exact inference, not MCMC.
+- SciPy 1.18.1 now supplies Beta, binomial and beta-binomial operations and independent quadrature. PyMC 5.28.5, ArviZ 0.23.4 and PyTensor 2.38.2 now support fitting. The dependency ranges retain the verified PyMC 5 / ArviZ InferenceData API; major-version migration is a separate change.
 - From `python/`: `uv sync --locked`; `uv run marimo run notebooks` opens the lesson gallery. Use `uv run marimo edit notebooks/<lesson>.py` to step through code.
 - Verify all Week 2 lessons: `uv run marimo check notebooks/02_*.py`; `uv run python checks/check_week02.py`. Individual `check_*.py` files provide focused re-entry checks.
 - Export: `mkdir -p outputs`; `uv run marimo export html notebooks/02_garden.py -o outputs/02_garden.html --force`.
 - Final Week 2 checkpoint: all five lesson checks and all marimo structural checks pass; `uv sync --locked --offline` succeeds. All five HTML exports exist locally. Browser inspection confirmed predictive panels and Beta density rendering; changing the misclassification report to white updates the posterior to 3/5. Upstream `scripts/`, `homework/`, root README and LICENSE have no changes.
 - Exported HTML is a snapshot; use the live marimo app for reactive Python controls. Generated outputs and environments are ignored.
 - The Codex sandbox required escalation for dependency downloads and marimo's local kernel/server sockets; installation and export succeeded. No global Python packages changed.
+
+- The companion is now an editable package under `python/src/rethinking_companion`; run `uv sync --locked` after checkout. Plotting and PyTensor caches use ignored `python/.cache`. On this macOS toolchain native PyTensor linking fails with `ld: library d64 not found`; `runtime.py` defaults to supported `cxx=` execution on macOS (explicit user PYTENSOR_FLAGS override this). Four-chain fits take about seven seconds here, with identical statistical validation. No compiler/system settings were changed.
+- ArviZ 0.23.4 writes an import-warning timestamp under the macOS user cache; sandboxed model checks/export required escalation for this library behavior. Its import cache location is not configurable by the project.
 
 ## Progress
 
@@ -35,6 +38,8 @@ Verified 2026-09-26 on macOS arm64:
 
 | `scripts/03_gaussian_generative_sim.r`: symmetric walk and path counts | `python/notebooks/03_gaussian_sums.py` | complete | All 100 step counts, eight controls, exact enumeration, seeded moments, marimo export |
 | `scripts/03_gaussian_generative_sim.r`: growth-model block | — | deferred | Vector-valued growth-factor recycling needs separate interpretation; not assumed equivalent to independent identical increments |
+
+| `scripts/03_prior_pred_OLS.r`: linear prior and updating model | `python/notebooks/03_gaussian_regression.py` and shared Gaussian helper | complete | Four-chain NUTS against exact posterior, 2D quadrature, sequential updates, predictive checks, notebook states and export |
 
 ## Completed Work
 
@@ -101,6 +106,15 @@ Verified 2026-09-26 on macOS arm64:
 - Verified all 100 counts for parity/support, exact normalization/symmetry/mean/variance, independent SciPy binomial agreement, seeded reproducibility and six-standard-error simulation bounds. Independently enumerate every path through eight moves. Eight UI choices and both chart schemas pass; marimo check and full export succeed.
 - Difference: no animated field, no R-identical random stream; normal comparison is an explanatory addition. Growth block is deliberately separate because its `runif(..., 1+gf)` recycles 100 bounds across 1,000 individuals.
 
+### First verified PyMC / ArviZ regression pattern
+
+- Source: linear prior/updating blocks of `scripts/03_prior_pred_OLS.r`; artifacts: `03_gaussian_regression.py`, `checks/check_gaussian_regression.py`, reusable `src/rethinking_companion/gaussian_regression.py` and `runtime.py`, locked dependencies; ignored `outputs/03_linear_fit.nc`, diagnostic JSON and HTML export.
+- Model: independent a,b ~ Normal(0,1); y ~ Normal(a+b*x,1). The source overwrites its intended n=10 demo with n=0; explicitly activate ten synthetic observations with NumPy seed 2971, clipped Normal x, true slope 0.7 and generating noise 0.5. Fitted sigma stays 1. The changed execution scope and random stream are stated in the lesson.
+- Fit: four independent NUTS chains, 1,000 tuning + 1,500 retained draws per chain, target_accept 0.9, cores=1, seed 731. Labels identify coefficients, observations and predictions. Prior simulation uses 1,000 draws. No fit cache silently replaces execution.
+- Independent checks: solve the conjugate Gaussian posterior and also integrate prior × likelihood on a 301×301 parameter grid. Sequential rank-one updates match batch solutions at every data prefix. NUTS means and full covariance agree within six Monte Carlo standard errors; prior draws/noise, posterior predictive shapes, and new-data means/quantiles/noise pass. Predictions reproduce each draw's design-matrix multiplication exactly, verifying coefficient conditioning rather than accidental resampling.
+- Diagnostics: max rank R-hat 1.001329; min bulk ESS 5707.6; min tail ESS 4021.3; zero divergences; min BFMI 1.092; maximum tree depth 3. Thresholds are R-hat <1.01, both ESS >400, no divergences, BFMI >0.3, depth <10. Clean marimo check, five displayed prefix states, chart schemas and a separate full notebook export (fresh fit) pass.
+- Pedagogy: prior coefficient draws imply whole functions; distinguish central 89% uncertainty about the mean from prediction intervals for observations. The slider uses exact prefix updates while MCMC verifies the full-data fit once per execution. Here quap is exact because the posterior is Gaussian; NUTS establishes a reusable pattern for non-Gaussian models.
+
 ## Shared Translation Patterns
 
 - R recursive garden branches → `itertools.product` over physical-marble IDs; compatibility is the conjunction of observed-color matches.
@@ -118,6 +132,16 @@ Verified 2026-09-26 on macOS arm64:
 
 - Observation error trees → enumerate joint true-state/report paths, marginalize by summation, then normalize compatible paths; preserve the direction of conditioning.
 
+### Model-fitting pattern
+
+- `quap` / `extract.samples` → explicitly specified PyMC model + four-chain NUTS, retaining labeled `InferenceData.posterior` chain/draw axes for ArviZ. This changes the inference algorithm, not the likelihood/prior; compare with independent references before reuse.
+- `extract.prior` → `pm.sample_prior_predictive`; `sim` at training inputs → `sample_posterior_predictive(..., extend_inferencedata=True)`.
+- `link` at new predictors → separate prediction model with the same coefficient names/dimensions and deterministic mean; `sample_posterior_predictive(..., predictions=True, var_names=[mean,outcome])` conditions on the joint posterior. Tests must verify those means equal matrix multiplication of the original posterior coefficients.
+- `precis` → `az.summary`; also inspect unrounded rank R-hat, bulk/tail ESS, divergences, BFMI and tree depth. A passing sampler is not evidence that the statistical model fits reality.
+- Equal-tailed intervals use NumPy quantiles; ArviZ summary's default HDI is not called a percentile interval. Preserve joint draws for contrasts/covariances.
+- Independent first-model oracle: Normal-prior, known-noise regression has V=(I+XᵀX/σ²)⁻¹, m=VXᵀy/σ². Use linear solves. Predictive covariance includes observation variance as well as X V Xᵀ.
+- API references used: [PyMC posterior predictions](https://www.pymc.io/projects/docs/en/v5.24.0/api/generated/pymc.sample_posterior_predictive.html), [ArviZ diagnostics](https://python.arviz.org/en/v0.21.0/api/diagnostics.html); installed signatures/source were checked for version-specific behavior.
+
 ## Known Issues / Deferred Fidelity
 
 - Distinct Week 2 statistical concepts are complete. Incidental one/two/three-bag drawing variants use the same verified counting rule; exact radial presentation is not reproduced.
@@ -126,12 +150,12 @@ Verified 2026-09-26 on macOS arm64:
 - Exact radial geometry, animation, fonts and slide presentation are deferred.
 - The first lesson is finite inference, not a continuous grid approximation.
 - Future sampling translations require statistical agreement rather than R-identical random streams.
-- GIS/globe graphics remain deferred; the globe script's Beta updating and interval computations are complete. Nontrivial `rethinking` model translations have not yet been needed.
+- GIS/globe graphics remain deferred; the globe script's Beta updating and interval computations are complete. The first Normal-prior regression is verified; constrained/unknown-noise and non-Gaussian models still need their own validation.
 - Live interaction needs a running marimo process; exported HTML does not recompute Python.
 
 ## Next Chunk
 
-Establish the first PyMC + ArviZ fitting pattern using the **linear Normal-prior, known-noise regression** in `scripts/03_prior_pred_OLS.r` (first prior-predictive and linear-updating blocks). Build one canonical regression lesson: a,b ~ Normal(0,1), y ~ Normal(a+b*x,1), prior and posterior predictions, and observation-prefix learning. Activate the intended 10-point synthetic demonstration explicitly (the source overwrites `n_points` with zero) with a fixed NumPy seed, preserving its generating slope 0.7, noise 0.5 and clipped x. The fitted likelihood's sigma remains 1 as in R. Verify four-chain NUTS with ArviZ diagnostics and independently derived Gaussian posterior means/covariance and predictive moments. Add dependencies locally and document installed versions, parameter naming/dimensions, prior/posterior predictive conventions and diagnostics before reusing the pattern. Defer polynomial extensions until this first fit passes.
+Extend the existing canonical `03_gaussian_regression.py` lesson with the quadratic and cubic mean-function examples in `scripts/03_prior_pred_OLS.r`. Reuse the verified Normal-prior/known-noise helper; do not create duplicate fitting lessons. Preserve the quadratic example's deliberate ninth-point replacement (x=3,y=-1), polynomial coefficients, generating noise 0.5 and fitted noise 1. Use source seed labels 12 and 13 with explicit NumPy/R stream differences. Verify both fits against multivariate Gaussian exact posteriors, four-chain diagnostics, covariance-aware mean/predictive uncertainty and joint prediction consistency; explain extrapolation and that these are linear models in coefficients despite curved mean functions. Existing dependencies suffice.
 
 ## Re-entry Instructions
 
