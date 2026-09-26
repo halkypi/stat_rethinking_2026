@@ -24,7 +24,8 @@ Verified 2026-09-26 on macOS arm64:
 |---|---|---|---|
 | Week 2 / `scripts/02_*` inventory | This report | complete | All four scripts inspected |
 | `scripts/02_garden_plots_lib.R`: three four-marble bags, B–W–B | `python/notebooks/02_garden.py` | complete | Full marimo execution, HTML export, all four slider states, exact enumeration and Altair schema checks |
-| `scripts/02_garden_plots_lib.R`: six-marble and misclassification examples | — | not-started | Outside first lesson scope |
+| `scripts/02_garden_plots_lib.R`: six-marble example | `python/notebooks/02_garden_sizes.py` | complete | Four controls, 180 exact rational checks, marimo HTML export |
+| `scripts/02_garden_plots_lib.R`: final manual misclassification example | — | not-started | Next chunk |
 | `scripts/02_garden_animation.r` | — | deferred | Static path grid preserves first lesson's path-counting concept |
 | `scripts/02_predictive_simulation.r`: statistical core | `python/notebooks/02_predictive_simulation.py` | complete | Both modes × four sample sizes; 50,000 seeded draws each, independent quadrature, moments, chart schemas, marimo HTML export |
 | `scripts/02_globe_tossing_updating.r`: Beta updating and percentile interval | `python/notebooks/02_beta_updating.py` | complete | Every prefix, likelihood quadrature, three interval levels, reproducible quantiles, marimo HTML export |
@@ -68,6 +69,14 @@ Verified 2026-09-26 on macOS arm64:
 - Exact 99% intervals: Beta(7,4) [0.26488601, 0.92323183]; Beta(2,4) [0.02288122, 0.81490273]. These are central percentile intervals, not highest-density intervals.
 - Differences: omit GIS/projection/spinning globe and interpolation frames; include exact quantiles and explicit density-versus-probability explanations. The plotting grid is not an inference approximation. R was not executed; independent likelihood integration verifies its statistical rule.
 
+### Six-marble garden and unequal path totals
+
+- Source: `scripts/02_garden_plots_lib.R`, `n <- 6`, `nblue <- 3` block. Artifacts: `python/notebooks/02_garden_sizes.py`, `python/checks/check_garden_sizes.py`, ignored HTML export.
+- Lesson: more compatible physical paths need not mean greater likelihood. Three blue out of six gives 27/216 for B–W–B; two blue out of four gives 8/64. Both are 1/8 under replacement, so these color observations cannot distinguish the bags.
+- Translate the six-way radial diagram to an exact count/fraction table and Altair likelihood comparison. The comparison with a four-marble bag makes the normalization lesson explicit; the source's stale comment mentioning ten is superseded by its executable value six.
+- Verification: every slider state executes; all 180 combinations of bag sizes 4/6, possible blue counts, and binary sequences of length 0–3 agree with independent rational Bernoulli likelihoods, including zero/one probability boundaries. Altair schema, marimo check and executable HTML export pass. No simulation or dependencies added.
+- Difference: static probability comparison replaces radial geometry; it explicitly explains that cross-hypothesis raw-count normalization only works when per-path probability scales are equal.
+
 ## Shared Translation Patterns
 
 - R recursive garden branches → `itertools.product` over physical-marble IDs; compatibility is the conjunction of observed-color matches.
@@ -85,7 +94,7 @@ Verified 2026-09-26 on macOS arm64:
 
 ## Known Issues / Deferred Fidelity
 
-- Remaining sections of the static R library are not claimed complete.
+- The final misclassification section of the static R library remains pending; ordinary four- and six-marble garden concepts are complete.
 - Exact radial geometry, animation, fonts and slide presentation are deferred.
 - The first lesson is finite inference, not a continuous grid approximation.
 - Future sampling translations require statistical agreement rather than R-identical random streams.
@@ -94,7 +103,7 @@ Verified 2026-09-26 on macOS arm64:
 
 ## Next Chunk
 
-Translate the six-marble B–W–B example in `scripts/02_garden_plots_lib.R` (the block with `n <- 6`, `nblue <- 3`). Build a small marimo comparison with the existing two-blue/four-marble bag: 27/216 and 8/64 paths give the same likelihood 1/8. This completes the remaining ordinary garden example and teaches why path counts must be divided by their totals when gardens differ in size. Use exact enumeration, an Altair probability comparison and no new dependencies. Verify every length-0–3 sequence against Bernoulli probabilities and execute the whole lesson.
+Translate the final manually drawn misclassification tree in `scripts/02_garden_plots_lib.R`, beginning at `# try doing it manually`. It has three blue and one white true-state branches; each branches into three possible reports, with two correct and one incorrect. Teach latent true color versus reported color, marginalize over true states, and condition on a report. Verify the twelve equally weighted paths independently of Bayes' formula: reported blue has probability 7/12 and P(true blue | reported blue) = 6/7; reported white gives P(true blue | reported white) = 3/5. Use a marimo lesson with an Altair joint-probability chart, existing dependencies, and explicit source mapping. The earlier `garden2` attempt is not the canonical conditional-observation model; document its difference rather than translating its drawing recursion.
 
 ## Re-entry Instructions
 

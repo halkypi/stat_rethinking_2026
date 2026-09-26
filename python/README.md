@@ -44,7 +44,8 @@ It teaches exact Bayesian updating for three candidate bags with an observation 
 compatible-path grids, prior/posterior bars, and sequential updating. The [predictive simulation lesson](notebooks/02_predictive_simulation.py) adds prior and
 posterior predictive counts, seeded simulation and an exact beta-binomial comparison.
 The [Beta-updating lesson](notebooks/02_beta_updating.py) connects observations to
-continuous posterior densities and credible intervals. The rest of Week 2 remains in progress; the cumulative report identifies the next chunk.
+continuous posterior densities and credible intervals. The [six-marble comparison](notebooks/02_garden_sizes.py) explains normalization
+when path totals differ. The misclassification example remains to be translated; the cumulative report identifies the next chunk.
 
 ## Run the lesson
 
