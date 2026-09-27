@@ -1,0 +1,13 @@
+{
+  "name": "WaffleDivorce",
+  "description": "US state-level marriage, divorce, and Waffle House data for 50 states. Used in Statistical Rethinking to demonstrate confounding (Waffle Houses correlate with divorce rate via Southern US culture).",
+  "source_package": "rethinking",
+  "source_url": "https://github.com/rmcelreath/rethinking/blob/master/data/WaffleDivorce.csv",
+  "original_citation": "McElreath, R. (2020). Statistical Rethinking, 2nd edition. CRC Press.",
+  "license": "GPL-3 (rethinking package)",
+  "rows": 50,
+  "columns": ["Location", "Loc", "Population", "MedianAgeMarriage", "Marriage", "Marriage SE", "Divorce", "Divorce SE", "WaffleHouses", "South", "Slaves1860", "Population1860", "PropSlaves1860"],
+  "separator": ";",
+  "sha256": "c3f4cc6ce6447566120b09649b34ad8ad7ae581b12d833608465157f3a2379fb",
+  "retrieved": "2026-09-27"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "cherry_blossoms",
+  "description": "Historical phenological data for cherry tree flowering at Kyoto City, Japan (801-2015). Columns: year, doy (day of year of first bloom), temp, temp_upper, temp_lower. Many NA values in doy and temperature columns.",
+  "source_package": "rethinking",
+  "source_url": "https://github.com/rmcelreath/rethinking/blob/master/data/cherry_blossoms.csv",
+  "original_citation": "Aono, Y. & Kazui, K. (2008). Phenological data series of cherry tree flowering in Kyoto, Japan, and its application to reconstruction of springtime temperatures since the 9th century. International Journal of Climatology, 28(7), 905-914.",
+  "license": "GPL-3 (rethinking package)",
+  "rows": 1215,
+  "columns": ["year", "doy", "temp", "temp_upper", "temp_lower"],
+  "separator": ";",
+  "sha256": "a5a5c811249a8fdf816c4a8e22ab947a5bc905ae53739549b75600ba95606496",
+  "retrieved": "2026-09-27"
+}
