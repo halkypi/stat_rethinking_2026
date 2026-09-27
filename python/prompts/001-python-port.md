@@ -123,6 +123,33 @@ Do not require floating-point or sampling output to exactly equal R.
 
 When equivalence cannot be verified, mark the chunk incomplete and explain why.
 
+## Long-running computation handoff
+
+Scott prefers to run and monitor materially long computations himself rather than have an agent spend context waiting for them.
+
+This is a **project-wide operating principle** for all future sessions and parallel workers.
+
+When you reach a computation that is expected to be materially long-running—such as heavy sampling, many-replication validation, large exports, expensive GP/phylogenetic/ODE/HMM fits, or another process where most of the agent's time would be spent waiting—prepare a **fire-and-forget handoff** instead of repeatedly polling or blocking.
+
+Before handing off:
+
+1. finish and commit all code/configuration needed to launch the job;
+2. give Scott exact shell command(s) to run from the correct worktree/directory;
+3. make the command persist durable outputs to ignored or designated artifact paths, including enough of:
+   - stdout/stderr log;
+   - diagnostics/summary JSON or text;
+   - posterior/sample artifact when needed;
+   - seed/configuration/version metadata where relevant;
+4. explain how Scott can tell the process is still running and how to tell it completed successfully;
+5. name the exact output files you will inspect when Scott returns;
+6. stop rather than repeatedly polling the job.
+
+Scott will run and monitor the command and tell you when it completes.
+
+When the session resumes, inspect the persisted artifacts and continue verification from those results. Do not rerun an expensive job simply because the agent session resumed unless inputs/configuration changed or the artifacts are incomplete/corrupt.
+
+For short computations, autonomous execution is still appropriate. Use judgment; there is no rigid duration threshold.
+
 ## Fidelity over cosmetic parity
 
 Do not spend disproportionate effort reproducing incidental slide graphics, fonts, colors, animation effects, or R-specific presentation machinery.
