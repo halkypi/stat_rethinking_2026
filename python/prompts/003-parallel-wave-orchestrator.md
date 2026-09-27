@@ -129,6 +129,7 @@ The worker must:
 - state its validation/oracle strategy;
 - identify dependency or shared-infrastructure needs;
 - identify likely integration conflicts;
+- identify any computation expected to take long enough that Scott should run it externally;
 - write the plan to its unique plan file;
 - commit the plan;
 - **STOP and wait for Scott**.
@@ -145,6 +146,7 @@ Once Scott manually approves the plan, the worker must:
 - preserve current statistical verification standards;
 - make frequent coherent commits;
 - avoid unnecessary edits to canonical shared state;
+- use the long-running-computation handoff protocol below when appropriate rather than sitting idle waiting for expensive jobs;
 - write and commit its final worker report;
 - STOP.
 
@@ -159,9 +161,39 @@ The final report must contain:
 - shared infrastructure changed or proposed;
 - unresolved issues;
 - commit SHAs;
-- integration notes.
+- integration notes;
+- any externally run long computations, their commands, outputs, and evidence inspected.
 
-## 5. Shared-state rules for workers
+## 5. Long-running computation handoff — project-wide principle
+
+Scott prefers to run and monitor long computations himself rather than have an agent spend its context waiting for them.
+
+Apply this principle throughout this wave and future waves.
+
+When a worker reaches a computation that is expected to be materially long-running—such as heavy sampling, many-replication validation, large exports, expensive GP/phylogenetic/ODE/HMM fits, or other jobs where the agent would mostly wait—it should prepare a **fire-and-forget handoff** instead of polling or blocking unnecessarily.
+
+The worker must:
+
+1. finish and commit all code/configuration needed to launch the job;
+2. provide Scott with exact shell command(s) to run from the worker worktree;
+3. make the command write durable outputs to ignored or designated artifact paths, including enough of:
+   - stdout/stderr log;
+   - diagnostics/summary JSON or text;
+   - posterior/sample artifact if needed for later inspection;
+   - deterministic metadata such as seed/configuration/version where relevant;
+4. state how Scott can tell the process is still running and how to tell it completed successfully;
+5. state the exact file(s) the worker will inspect when Scott returns;
+6. STOP rather than repeatedly polling the process.
+
+Scott will run/monitor the command and tell the worker when it has completed.
+
+When Scott returns, the worker must inspect the persisted artifacts and continue verification from those results. Do not rerun an expensive job merely because the agent session resumed unless the inputs/configuration changed or the artifacts are incomplete/corrupt.
+
+For short computations, normal autonomous execution is fine. Use judgment; this is a principle to avoid wasting agent context on waiting, not a rigid time threshold.
+
+Workers should include any anticipated long-run handoff in Phase 1 so Scott knows in advance where the session may pause.
+
+## 6. Shared-state rules for workers
 
 Parallel workers should avoid editing these unless absolutely required:
 
@@ -178,7 +210,7 @@ Workers must not independently update the cumulative report. The integration orc
 
 If a worker genuinely needs a shared dependency or common helper change, it may make the smallest justified change, but it must flag that prominently in both its plan and final report.
 
-## 6. Coordination record
+## 7. Coordination record
 
 Create:
 
@@ -195,11 +227,12 @@ For each worker record:
 - relevant source files;
 - dependencies;
 - expected shared-file/merge risks;
+- likely long-running computations and expected fire-and-forget handoff points;
 - recommended eventual integration order.
 
 This document is for durable project coordination. It does not launch anything.
 
-## 7. What Scott should do manually
+## 8. What Scott should do manually
 
 Scott will open three separate agent sessions himself.
 
@@ -224,14 +257,14 @@ For **each worker**, provide exactly:
 Also provide the short Phase-2 approval message Scott can paste back after reviewing a worker plan:
 
 ```text
-Approved. Execute Phase 2 from your worker prompt and approved plan. Implement, verify, commit, write your final worker report, and stop.
+Approved. Execute Phase 2 from your worker prompt and approved plan. Implement, verify, commit, write your final worker report, and stop. For any materially long-running computation, give me the fire-and-forget command/artifact handoff and stop so I can run and monitor it.
 ```
 
 Do **not** create or require a terminal-launching script unless Scott separately asks for one.
 
 Do not attempt to launch the workers yourself.
 
-## 8. When Scott returns after all workers finish
+## 9. When Scott returns after all workers finish
 
 The same orchestrator role becomes the integration implementor.
 
@@ -244,20 +277,21 @@ At that point:
 5. integrate one worker at a time into `agent/cortex-python-companion` using merge or cherry-pick as appropriate;
 6. reconcile dependencies and shared infrastructure centrally;
 7. run aggregate verification after each integration and again at the end;
-8. fix integration issues where appropriate;
-9. update canonical project state:
+8. use the same fire-and-forget handoff principle for any materially long aggregate verification or integration computation;
+9. fix integration issues where appropriate;
+10. update canonical project state:
    - `python/reports/cumulative-report.md`;
    - `python/reports/remaining-work-roadmap.md` if materially changed;
    - `python/README.md` where appropriate;
-10. commit the integrated state;
-11. remove completed worker worktrees only after their branches are safely integrated and their reports/commits are preserved;
-12. optionally delete local worker branches only when safe and justified;
-13. recommend the next set of sessions that can run in parallel;
-14. if another wave is appropriate, prepare its worktrees and prompts using the same protocol.
+11. commit the integrated state;
+12. remove completed worker worktrees only after their branches are safely integrated and their reports/commits are preserved;
+13. optionally delete local worker branches only when safe and justified;
+14. recommend the next set of sessions that can run in parallel;
+15. if another wave is appropriate, prepare its worktrees and prompts using the same protocol.
 
 Do not treat a worker as complete merely because it produced code. Review its validation, diagnostics, source coverage, and integration consequences first.
 
-## 9. Deliverables for this setup pass
+## 10. Deliverables for this setup pass
 
 Before stopping, ensure these exist:
 
@@ -270,7 +304,7 @@ Before stopping, ensure these exist:
 
 No worker session should have been started by you.
 
-## 10. Final response — keep it operational
+## 11. Final response — keep it operational
 
 Your final output should be concise and action-oriented.
 
