@@ -197,21 +197,100 @@ Verified 2026-09-26 on macOS arm64:
 - Preserve the training centering constant as saved fit metadata. A new prediction grid must never redefine the intercept by using its own average.
 - Local source data: immutable upstream URL + SHA-256 + schema/row checks, provenance and upstream license; no network dependency during lesson execution.
 
+### Wave 01: Parallel sessions S2 + S4 + S5
+
+Three sessions ran in parallel from the same branch tip using separate worktrees. Integration order: S2 first (WaffleDivorce data), S4 second (trivial WaffleDivorce dedup), S5 third (runtime.py change).
+
+#### S2 — B-spline regression + elemental confounds
+
+- Source: `scripts/04_prior_pred_spline.r` (224 lines), `scripts/05_elemental_confounds.r` (261 lines).
+- Artifacts: `04_spline.py`, `05_confounds.py`, `check_spline.py`, `check_confounds.py`, `spline.py` helper, cherry blossom + WaffleDivorce data with provenance.
+- B-spline basis via `scipy.interpolate.BSpline.design_matrix`; no new dependencies.
+- Cherry blossom spline (20 knots, tau=10): R-hat 1.0014, 0 divergences. Howell1 height~age: R-hat 1.0033, 0 divergences.
+- WaffleDivorce D~M+A: bA=−0.607 (strong), bM=−0.058 (near zero). Confound confirmed.
+- Fork/pipe/collider/descendant d-separation predictions verified. Happiness collider shows spurious conditional correlation.
+- Animation deferred throughout.
+
+| Source | Python artifact | Status | Verification |
+|---|---|---|---|
+| `04_prior_pred_spline.r`: B-spline basis, prior/posterior predictive | `04_spline.py` | complete | Basis properties, NUTS diagnostic gates, marimo check |
+| `04_prior_pred_spline.r`: animation | — | deferred | |
+| `05_elemental_confounds.r`: fork/pipe/collider/descendant | `05_confounds.py` | complete | d-separation predictions with n=10,000 |
+| `05_elemental_confounds.r`: WaffleDivorce D~A, D~M, D~M+A | `05_confounds.py` | complete | NUTS diagnostic gates, bA strong, bM near zero |
+| `05_elemental_confounds.r`: happiness collider | `05_confounds.py` | complete | Marginal independence, conditional negative correlation |
+| `05_elemental_confounds.r`: animation | — | deferred | |
+
+#### S4 — MCMC mechanics + ESS/ACF diagnostics
+
+- Source: `scripts/08_MCMC.r` (612 lines), `scripts/08_mHMC.stan` (27 lines), `scripts/LB03_ess acf example.r` (61 lines).
+- Artifacts: `08_mcmc.py`, `lab_ess_acf.py`, `check_mcmc.py`, `check_ess_acf.py`, `check_ess_acf_run.py` (fire-and-forget), `mcmc.py` helper, bangladesh data with provenance.
+- King Markov: 200,000 steps, max |empirical − target| = 0.002, chi-squared 13.39.
+- HMC leapfrog: energy conservation |ΔH| < 0.02 for step=0.01; divergent trajectories demonstrated at step=0.15.
+- WaffleDivorce NUTS: bA=−0.610, bM=−0.062. R-hat 1.0020, ESS 4335, 0 divergences.
+- Bad chains: pathological priors → R-hat 1.068, 237 divergences; reasonable priors → R-hat 1.005, 0 divergences.
+- Bangladesh hierarchical (non-centered, ~50 min on compiler-free backend): R-hat 1.001, ESS 1310, 0 divergences. Partial pooling verified (posterior SD 0.338 vs raw SD 1.195).
+- 1000-dim Normal: theta bulk ESS 5683 vs theta² bulk ESS 1890 (ratio 3.0×). ACF ordering correct.
+- Animation deferred throughout.
+
+| Source | Python artifact | Status | Verification |
+|---|---|---|---|
+| `08_MCMC.r`: King Markov | `08_mcmc.py` | complete | Stationary distribution matches target |
+| `08_MCMC.r`: HMC leapfrog | `08_mcmc.py` | complete | Energy conservation + divergence demo |
+| `08_MCMC.r`: WaffleDivorce workflow | `08_mcmc.py` | complete | NUTS diagnostic gates |
+| `08_MCMC.r`: R-hat illustration | `08_mcmc.py` | complete | W/B convergence |
+| `08_MCMC.r`: bad chains | `08_mcmc.py` | complete | Diagnostic failure + fix |
+| `08_MCMC.r`: animation | — | deferred | |
+| `08_mHMC.stan` | Absorbed into PyMC | complete | |
+| `LB03_ess acf example.r`: Bangladesh | `lab_ess_acf.py` | complete | Non-centered, shrinkage verified |
+| `LB03_ess acf example.r`: 1000-dim ESS | `lab_ess_acf.py` | complete | ESS ratio and ACF ordering |
+
+#### S5 — Binomial/Poisson GLMs + sensitivity analysis
+
+- Source: `scripts/09_binomial_GLMs.r` (323 lines), `scripts/10_confounds_poisson.r` (450 lines), `scripts/A10_sensitivity.R` (110 lines).
+- Artifacts: `09_binomial_glm.py`, `10_poisson_sensitivity.py`, `check_binomial_glm.py`, `check_poisson_sensitivity.py`, `glm.py` helper, UCBadmit + Kline data with provenance.
+- **First non-Gaussian likelihoods**: Bernoulli, Binomial, and Poisson.
+- UCBadmit: Simpson's paradox confirmed — total effect favors men (P(admit|F) − P(admit|M) = −0.141), but 4/6 departments favor women. Marginal causal effect 0.036 (near zero).
+- Aggregated binomial ≡ disaggregated Bernoulli: max mean diff 0.003.
+- Sensitivity with latent u: u correlation 0.315 (fixed b/g). Proxy model: tau=[0.094, 0.498, 0.254] (true [0.1, 0.5, 0.25]), u correlation 0.958. Proxy model has poor mixing (R-hat 1.21, ESS 15, BFMI 0.019) but excellent estimates — documented as known PyMC limitation.
+- Kline tools Poisson: interaction model has high Pareto k for Hawaii. Innovation/loss scientific model fits well.
+- Runtime change: removed macOS compiler-free workaround from `runtime.py` after discovering and patching the PyTensor `-ld64` flag on macOS 26. C compilation now works, giving ~5–10× speedup.
+- Animation deferred throughout.
+
+| Source | Python artifact | Status | Verification |
+|---|---|---|---|
+| `09_binomial_GLMs.r`: logit link, priors | `09_binomial_glm.py` | complete | Prior predictive comparison |
+| `09_binomial_GLMs.r`: animation | — | deferred | |
+| `09_binomial_GLMs.r`: generative UCBadmit sim | `09_binomial_glm.py` | complete | Bernoulli + binomial equivalence |
+| `09_binomial_GLMs.r`: UCBadmit real data | `09_binomial_glm.py` | complete | Simpson's paradox, marginal causal effect |
+| `10_confounds_poisson.r`: confounded sim | `10_poisson_sensitivity.py` | complete | Spurious contrast + u recovery |
+| `10_confounds_poisson.r`: sensitivity | `10_poisson_sensitivity.py` | complete | Latent u, fixed + learned b/g |
+| `10_confounds_poisson.r`: real UCBadmit sensitivity | `10_poisson_sensitivity.py` | complete | Dept A contrast 0.061 |
+| `10_confounds_poisson.r`: proxy variables | `10_poisson_sensitivity.py` | complete | tau recovery excellent; mixing poor (documented) |
+| `10_confounds_poisson.r`: Poisson regression (Kline) | `10_poisson_sensitivity.py` | complete | PSIS comparison, Hawaii influential |
+| `10_confounds_poisson.r`: innovation/loss model | `10_poisson_sensitivity.py` | complete | Scientific model verified |
+| `A10_sensitivity.R` | Merged into `10_poisson_sensitivity.py` | complete | Learned b/g model |
+
 ## Known Issues / Deferred Fidelity
 
-- Distinct Week 2 statistical concepts are complete. Incidental one/two/three-bag drawing variants use the same verified counting rule; exact radial presentation is not reproduced.
-- The earlier `garden2` drawing draft remains unported in favor of the explicit final manual misclassification model.
+- Distinct Week 2 statistical concepts are complete. Incidental drawing variants use the same verified counting rule; exact radial presentation is not reproduced.
 - Week 2 homework is outside this source-script translation checkpoint.
-- Exact radial geometry, animation, fonts and slide presentation are deferred.
-- The first lesson is finite inference, not a continuous grid approximation.
-- Future sampling translations require statistical agreement rather than R-identical random streams.
-- GIS/globe graphics remain deferred; the globe script's Beta updating and interval computations are complete. The first Normal-prior regression is verified; constrained/unknown-noise and non-Gaussian models still need their own validation.
+- Exact radial geometry, animation, fonts and slide presentation are deferred across all sessions.
+- GIS/globe graphics remain deferred; the globe script's Beta updating and interval computations are complete.
 - Live interaction needs a running marimo process; exported HTML does not recompute Python.
+- The proxy variable model (`10_poisson_sensitivity.py`) has poor NUTS mixing (R-hat 1.21, ESS 15) but excellent parameter recovery. This is a known PyMC limitation for funnel geometries; Stan handles it better. Documented in the lesson.
+- The A10 learned b/g model has marginal convergence (R-hat 1.019, ESS 287). The Uniform(0,1) priors with 2000 latent variables is near PyMC's practical limit.
+- PyTensor `-ld64` patch on macOS 26 is applied to the local venv's site-packages and will be lost on `uv sync`. Re-apply after rebuilding the environment (see S5 commit `6055bcf` for instructions).
 
 ## Next Chunk
 
-Begin **B-spline regression** from `scripts/04_prior_pred_spline.r` (cherry blossom data + Howell1 height~age spline) and **elemental confounds** from `scripts/05_elemental_confounds.r` (fork/pipe/collider/descendant, WaffleDivorce multiple regression, happiness collider simulation). This is Session S2 in `python/reports/remaining-work-roadmap.md`. Cherry blossom and WaffleDivorce data need to be vendored. B-spline basis functions require `patsy` or `scikit-learn`; animation portions of the spline script are deferrable. The confounds lesson introduces the first multiple regression with substantive causal interpretation. Both scripts use `quap`; translate to four-chain NUTS with diagnostic gates.
+The next roadmap sessions are:
+
+- **S3**: Bad controls (`06_simulations_bad_controls.r` + `06_breen_collider_animation.R`) + overfitting/info criteria/robust regression (`07_overfitting_animations.r`). Completes Weeks 6–7 beginner.
+- **S6**: Ordered categorical regression (`11_ordered_categories.r`). Completes Week 10 beginner.
+- **S7**: Intro multilevel models (`12_intro_multilevel_models.r`) + Mundlak machine (`12_bonus_mundlak.r` + `B04_bonus_mundlak.r`). First multilevel model.
+
+S3 and S6 are natural Wave 02 parallel candidates (independent weeks, no shared data). S7 (first multilevel model) is the next critical-path risk and could also run in parallel if its infrastructure needs are self-contained.
 
 ## Re-entry Instructions
 
-Read this report, inspect Git status and recent commits, inspect the source named under **Next Chunk**, and continue from there. Do not redo completed chunks unless new evidence identifies a defect. Update this report and make descriptive commits after each verified chunk. The repository must remain resumable without previous chat history.
+Read this report, inspect Git status and recent commits, and continue from the **Next Chunk** section. The parallel orchestrator protocol is in `python/prompts/003-parallel-wave-orchestrator.md`; wave coordination records are in `python/reports/parallel/`. Do not redo completed chunks unless new evidence identifies a defect. The repository must remain resumable without previous chat history.

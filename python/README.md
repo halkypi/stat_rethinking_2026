@@ -39,8 +39,8 @@ The Python 3.13 environment is defined by `pyproject.toml` and `uv.lock`. Only d
 
 ## Current state
 
-The distinct statistical concepts in the supplied Week 2 scripts are complete
-as five executable lessons. Suggested learning order:
+Sixteen verified marimo notebooks cover Weeks 2–9 of the beginner track plus
+MCMC diagnostics. Suggested learning order:
 
 | Lesson | Concept |
 |---|---|
@@ -49,18 +49,20 @@ as five executable lessons. Suggested learning order:
 | [Misclassification](notebooks/02_misclassification.py) | True states, imperfect reports and conditioning |
 | [Beta updating](notebooks/02_beta_updating.py) | Continuous parameter uncertainty and credible intervals |
 | [Predictive simulation](notebooks/02_predictive_simulation.py) | Prior/posterior predictive counts and exact beta-binomial checks |
+| [Gaussian sums](notebooks/03_gaussian_sums.py) | Exact random-walk probabilities and normal approximation |
+| [Gaussian regression](notebooks/03_gaussian_regression.py) | First PyMC/ArviZ fit; exact posterior; polynomial extensions |
+| [Height–weight](notebooks/03_height_weight.py) | Centering, positive slope, unknown sigma, real data |
+| [Categorical weight](notebooks/04_categorical_weight.py) | Index variables, posterior contrasts, causal SCM |
+| [Simulation validation](notebooks/04_sim_validate.py) | Coverage check via repeated recovery |
+| [B-spline regression](notebooks/04_spline.py) | Basis functions, cherry blossom and Howell1 spline fits |
+| [Elemental confounds](notebooks/05_confounds.py) | Fork/pipe/collider, WaffleDivorce multiple regression |
+| [MCMC mechanics](notebooks/08_mcmc.py) | King Markov, HMC leapfrog, diagnostics, bad chains |
+| [Binomial GLM](notebooks/09_binomial_glm.py) | Logit link, UCBadmit, Simpson's paradox, marginal causal effects |
+| [Poisson and sensitivity](notebooks/10_poisson_sensitivity.py) | Latent confounders, proxy variables, Kline tools |
+| [ESS/ACF lab](notebooks/lab_ess_acf.py) | Bangladesh hierarchical diagnostics, 1000-dim ESS |
 
-Animation, GIS and incidental drawing variants are deferred. Week 2 homework
-has not been translated. The cumulative report names the next source-backed
-chunk in the report. Week 3 now includes [Gaussian sums](notebooks/03_gaussian_sums.py),
-with exact random-walk probabilities and a normal approximation, and
-[Gaussian regression](notebooks/03_gaussian_regression.py), the first thoroughly
-verified PyMC/ArviZ fit. The latter compares NUTS with an exact posterior and
-separates mean uncertainty from predictive uncertainty. The same notebook includes
-quadratic and cubic mean functions, with exact posterior checks for every fit.
-[Height–weight regression](notebooks/03_height_weight.py) adds centering, a positive
-slope, unknown residual scale, simulated recovery and actual Howell1 adults;
-independent numerical integration verifies that constrained posterior.
+Animation, GIS and incidental drawing variants are deferred. Homework has
+not been translated.
 
 ## Run the lessons
 
@@ -94,9 +96,11 @@ numerical integration or sampling-error bounds. Focused `checks/check_*.py`
 scripts are also available. Replace the filename in the export command to save
 another lesson; generated snapshots are ignored by Git.
 
-Model-fitting lessons run four chains and can take roughly 5–30 seconds after import
-on this machine. The macOS runtime uses a verified compiler-free PyTensor configuration;
-see the cumulative report for the toolchain reason and override.
+Model-fitting lessons run four chains. Simple models take 5–30 seconds;
+hierarchical and latent-variable models (Bangladesh, sensitivity) can take
+minutes. On macOS 26, C compilation is enabled after patching PyTensor's
+`-ld64` flag (see cumulative report). Without the patch, the compiler-free
+fallback still works but is slower.
 
 HTML exports save rendered outputs; reactive controls require the live app.
 Original R files remain unchanged. Detailed fidelity decisions and verification
