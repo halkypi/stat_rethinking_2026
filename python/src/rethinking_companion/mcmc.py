@@ -234,8 +234,12 @@ def fit_bad_chains(y, alpha_prior_sd, sigma_prior_rate, *, n_chains=3, seed=811,
     return idata
 
 
-def fit_bangladesh(dat, *, seed=821, draws=1500, tune=1000):
-    """Hierarchical contraception model with 61 varying intercepts and slopes."""
+def fit_bangladesh(dat, *, seed=821, draws=1500, tune=2000):
+    """Hierarchical contraception model with 61 varying intercepts and slopes.
+
+    Uses non-centered parameterization to avoid the funnel geometry that
+    makes centered hierarchical models difficult for HMC.
+    """
     C, D, U = dat["C"], dat["D"], dat["U"]
     n_districts = 61
     coords = {"district": np.arange(n_districts), "obs": np.arange(len(C))}
@@ -244,12 +248,15 @@ def fit_bangladesh(dat, *, seed=821, draws=1500, tune=1000):
         bbar = pm.Normal("bbar", 0, 1)
         sigma = pm.Exponential("sigma", 1)
         tau = pm.Exponential("tau", 1)
-        a = pm.Normal("a", abar, sigma, dims="district")
-        b = pm.Normal("b", bbar, tau, dims="district")
+        # non-centered: a = abar + sigma * a_offset
+        a_offset = pm.Normal("a_offset", 0, 1, dims="district")
+        b_offset = pm.Normal("b_offset", 0, 1, dims="district")
+        a = pm.Deterministic("a", abar + sigma * a_offset, dims="district")
+        b = pm.Deterministic("b", bbar + tau * b_offset, dims="district")
         logit_p = a[D] + b[D] * U
         pm.Bernoulli("C", logit_p=logit_p, observed=C, dims="obs")
         idata = pm.sample(draws=draws, tune=tune, chains=4, cores=1,
-                          random_seed=seed, target_accept=0.95,
+                          random_seed=seed, target_accept=0.99,
                           progressbar=False, return_inferencedata=True)
     return idata
 
