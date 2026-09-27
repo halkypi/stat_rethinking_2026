@@ -1,0 +1,9 @@
+{
+  "source": "rethinking R package (data(UCBadmit))",
+  "original_reference": "Bickel, P. J., Hammel, E. A., & O'Connell, J. W. (1975). Sex Bias in Graduate Admissions: Data from Berkeley. Science, 187(4175), 398-404.",
+  "description": "UC Berkeley graduate admissions by department and applicant gender, 1973. 12 rows (6 departments × 2 genders). Columns: dept, applicant.gender, admit, reject, applications. Total applications: 4526.",
+  "sha256": "f3481a303b68f02de62441b4183da7614b96f370672b8d67d8a5f50412a45f14",
+  "rows": 12,
+  "columns": ["dept", "applicant.gender", "admit", "reject", "applications"],
+  "license": "The underlying data are from a published scientific article and are in the public domain. The rethinking package is distributed under GPL-3."
+}
