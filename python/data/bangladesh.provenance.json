@@ -1,0 +1,10 @@
+{
+  "url": "https://raw.githubusercontent.com/rmcelreath/rethinking/master/data/bangladesh.csv",
+  "sha256": "80ecc341cd2b3a0a21b3d27433b6a91663bf2c3f3a3d02aa8d062d57f84a10e4",
+  "rows": 1934,
+  "columns": ["woman", "district", "use.contraception", "living.children", "age.centered", "urban"],
+  "separator": ";",
+  "source": "rethinking R package by Richard McElreath (Bangladesh Fertility Survey 1989)",
+  "license": "GPL-3",
+  "retrieved": "2026-09-27"
+}
