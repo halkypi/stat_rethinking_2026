@@ -1,0 +1,10 @@
+{
+  "url": "https://raw.githubusercontent.com/rmcelreath/rethinking/master/data/WaffleDivorce.csv",
+  "sha256": "c3f4cc6ce6447566120b09649b34ad8ad7ae581b12d833608465157f3a2379fb",
+  "rows": 50,
+  "columns": ["Location", "Loc", "Population", "MedianAgeMarriage", "Marriage", "Marriage SE", "Divorce", "Divorce SE", "WaffleHouses", "South", "Slaves1860", "Population1860", "PropSlaves1860"],
+  "separator": ";",
+  "source": "rethinking R package by Richard McElreath",
+  "license": "GPL-3",
+  "retrieved": "2026-09-27"
+}
