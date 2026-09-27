@@ -28,7 +28,8 @@ Verified 2026-09-26 on macOS arm64:
 - Some elapsed time in the last session was model fitting and fresh-fit HTML export; some was diagnosing the macOS backend and independently checking results. The compiler-free fusion issue made a synthetic fit take 163 seconds; excluding fusion reduced it to about 27 seconds. The runtime change justified rerunning earlier Gaussian checks, which passed. Ordinary future checks should not repeat successful fits unless relevant code, configuration, data, or unresolved evidence changes.
 - For future long computations, a proposed user-run handoff is documented in the README: prepare exact commands that save logs, samples and diagnostic summaries, end the agent turn, then inspect those artifacts when Scott reports completion. Scott asked about this option; the suggested two-minute threshold has not been adopted as a mandatory pause rule. Short runs can remain autonomous under the existing authorization. Preserve full sampling and independent verification either way.
 - Local Python computation does not call an OpenAI model. Do not infer credit consumption from wall-clock duration or promise a quantified saving from manual monitoring; no per-operation credit breakdown was available. Reduce unnecessary polling, verbose outputs and repeated reads while retaining statistical checks.
-- Pause checkpoint: all statistical implementation is committed through `b746c75`; Week 4 has not been started. No additional model runs were needed for this documentation-only handoff. The single Next Chunk below remains unchanged.
+- Pause checkpoint: all statistical implementation is committed through `b746c75`; Week 4 has not been started. No additional model runs were needed for this documentation-only handoff.
+- Cortex session on `agent/cortex-python-companion`: completed the full remaining-work roadmap (`python/reports/remaining-work-roadmap.md`) inventorying all 51 source files, then implemented Session S1 — categorical predictors (W\~S, W\~S+H, full SCM) and simulation-based validation. Three model fits on Howell1 adults, one independent integration oracle, 20-replication coverage check, two new marimo notebooks, two check scripts, and a shared `categorical.py` helper.
 
 ## Progress
 
@@ -54,6 +55,11 @@ Verified 2026-09-26 on macOS arm64:
 | `scripts/03_howell_new_weight_model.r`: synthetic validation and first adult weight fit | `python/notebooks/03_height_weight.py` | complete | Refined/expanded independent integration, both full fits, diagnostic/support/predictive checks, notebook charts and export |
 | `scripts/03_howell_plots.r`: prior-line illustration | Existing prior-function lessons | deferred | Mechanism already represented; reversed response/predictor direction is not claimed to be the same fitted model |
 | `scripts/03_ptolemaic_model.R` | — | deferred | Geocentric/heliocentric presentation animation; no fitted statistical model |
+
+| `scripts/04_height_weight_sex_categorical.r`: W\~S indexed group means | `python/notebooks/04_categorical_weight.py` and shared `categorical.py` | complete | Four-chain NUTS, independent numerical integration oracle for (a[1],a[2],sigma), posterior mean contrast M−F, individual prediction contrast, P(male heavier), diagnostic gates |
+| `scripts/04_height_weight_sex_categorical.r`: W\~S+H sex-varying slopes | Existing `04_categorical_weight.py` | complete | Four-chain NUTS with LogNormal positive slopes, diagnostic gates, positive slope support |
+| `scripts/04_height_weight_sex_categorical.r`: Full SCM (joint H+W model) | Existing `04_categorical_weight.py` | complete | Joint five-parameter model, do(S) causal contrast via simulated intervention, total effect > direct effect verified |
+| `scripts/LA04_sim heights validate example.r`: simulation-based validation | `python/notebooks/04_sim_validate.py` | complete | Single 4-chain recovery with 89% CI covering b=0.5; 20-replication coverage check (85%, within sampling error of 89%); notebook with 10-replication UI |
 
 ## Completed Work
 
@@ -148,6 +154,18 @@ Verified 2026-09-26 on macOS arm64:
 - Runtime verification found compiler-free elementwise fusion was unnecessarily slow (163 seconds for a synthetic fit). Excluding this supported optimizer pass reduced full fits to about 27 seconds; all linear/quadratic/cubic exact-oracle checks were repeated successfully. Short performance benchmarks were not treated as accepted inference.
 - Differences/deferred scope: NUTS replaces quap. Original R data files are untouched; official rethinking data are vendored only under python/. The source's repeated-fit point-estimate experiment is not presented as calibration and is deferred as a repeated validation demonstration. Adult animation, grouped models and all-age polynomial/log models remain separate/deferred work.
 
+### Week 4: Categorical predictors, causal contrasts and simulation validation
+
+- Source: `scripts/04_height_weight_sex_categorical.r` (all three blocks) and `scripts/LA04_sim heights validate example.r`. Artifacts: `python/notebooks/04_categorical_weight.py`, `python/notebooks/04_sim_validate.py`, `python/checks/check_categorical_weight.py`, `python/checks/check_sim_validate.py`, shared `python/src/rethinking_companion/categorical.py`.
+- Three models in one notebook. **W\~S**: indexed group means a[S] ~ Normal(60,10) with shared sigma ~ Uniform(0,10). S=1 Female (187), S=2 Male (165), 352 adults. **W\~S+H**: sex-varying intercepts and positive slopes b[S] ~ LogNormal(0,1) on centered height. **Full SCM**: jointly model height and weight as functions of sex; simulate do(S) to get the total causal effect.
+- The **W\~S** model has an independent integration oracle: conditionally on sigma, each a[k] has a Normal posterior. Integrate out both a[k] analytically, then numerically integrate sigma on a 2001-point grid. NUTS means agree within 6 Monte Carlo standard errors. Grid boundary mass < 1e-8.
+- W\~S integrated posterior means: a[Female]=41.844, a[Male]=48.611, sigma=5.525. Mean contrast M−F ≈ 6.77 kg. P(individual male heavier than individual female) ≈ 0.61. The mean contrast is tight; the individual contrast is wide because sigma dominates.
+- W\~S diagnostics: R-hat 1.0009, min bulk ESS 5301, min tail ESS 3860, zero divergences, BFMI 1.067, max depth 3.
+- W\~S+H diagnostics: R-hat 1.0010, min bulk ESS 4219, tail ESS 3928, zero divergences, BFMI 1.075, max depth 6. LogNormal slopes confirmed positive.
+- Full SCM: total causal effect do(Male)−do(Female) ≈ 6.81 kg; direct effect (height-adjusted mean contrast) ≈ −0.07 kg. The total effect is larger because sex affects height, and height affects weight. Diagnostics: R-hat 1.0015, min bulk ESS 4459, tail ESS 3889, zero divergences, BFMI 0.995, depth 6.
+- **Simulation validation lab** (from `LA04_sim heights validate example.r`): simulate W = b*H + noise from known b=0.5, fit, check 89% interval coverage. Single detailed recovery passes (b=0.4455, CI [0.389, 0.503]). 20-replication coverage: 85% (within sampling error of 89% nominal). Interactive notebook with 10/50/100 replication options.
+- Differences: NUTS replaces `quap`. The do(S) contrast simulates through the joint posterior rather than using `sim()`. The simulation validation uses PyMC throughout rather than the R `replicate(100, f())` pattern. Notebook display controls select model stage; each stage fits four chains.
+
 ## Shared Translation Patterns
 
 - R recursive garden branches → `itertools.product` over physical-marble IDs; compatibility is the conjunction of observed-color matches.
@@ -192,7 +210,7 @@ Verified 2026-09-26 on macOS arm64:
 
 ## Next Chunk
 
-Begin the canonical **group means and posterior contrasts** lesson from the first `W ~ S` block of `scripts/04_height_weight_sex_categorical.r` (stop before `W ~ S + H`). Fit adult weights with indexed a[S] ~ Normal(60,10) and shared sigma ~ Uniform(0,10), using the existing checksummed Howell1 data and source mapping male=0/1 → Female/Male. Compare the posterior mean-weight contrast M−F with the much wider contrast between two independently predicted individuals, and estimate P(individual contrast>0). Preserve paired joint posterior draws. Independently integrate sigma with conditional Normal group means to check posterior/contrast moments and predictive probabilities, plus the established four-chain diagnostic gates. State that a statistical group contrast alone does not identify a causal effect. Existing dependencies suffice; later height-adjusted and full SCM models should extend or follow this lesson without duplicating its basic indexing concept.
+Begin **B-spline regression** from `scripts/04_prior_pred_spline.r` (cherry blossom data + Howell1 height~age spline) and **elemental confounds** from `scripts/05_elemental_confounds.r` (fork/pipe/collider/descendant, WaffleDivorce multiple regression, happiness collider simulation). This is Session S2 in `python/reports/remaining-work-roadmap.md`. Cherry blossom and WaffleDivorce data need to be vendored. B-spline basis functions require `patsy` or `scikit-learn`; animation portions of the spline script are deferrable. The confounds lesson introduces the first multiple regression with substantive causal interpretation. Both scripts use `quap`; translate to four-chain NUTS with diagnostic gates.
 
 ## Re-entry Instructions
 
