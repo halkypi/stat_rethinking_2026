@@ -1,0 +1,9 @@
+{
+  "source": "rethinking R package (data(Kline))",
+  "original_reference": "Kline, M. A., & Boyd, R. (2010). Population size predicts technological complexity in Oceania. Proceedings of the Royal Society B, 277(1693), 2559-2564.",
+  "description": "Tool complexity in 10 Oceanic societies. Columns: culture, population, contact (low/high), total_tools, mean_TU (mean technological units). Used to illustrate Poisson regression and the relationship between population size and technological complexity.",
+  "sha256": "96fdb412ed11c594b6cd32c01706ecdace7fb40945233e21c2d4f74565fc2372",
+  "rows": 10,
+  "columns": ["culture", "population", "contact", "total_tools", "mean_TU"],
+  "license": "The underlying data are from a published scientific article. The rethinking package is distributed under GPL-3."
+}
